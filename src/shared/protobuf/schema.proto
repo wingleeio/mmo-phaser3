@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+enum Direction {
+    UP = 0;
+    DOWN = 1;
+    LEFT = 2;
+    RIGHT = 3;
+}
+
+message Movement {
+    bool up = 1;
+    bool down = 2;
+    bool left = 3;
+    bool right = 4;
+}
+
+message MovementInput {
+    Direction direction = 1;
+    bool isMoving = 2;
+}
+
+message Player {
+    int32 id = 1;
+    string name = 2;
+    double x = 3;
+    double y = 4;
+    int32 sprite = 5;
+    Direction direction = 6;
+    Movement movement = 7;
+    double speed = 8;
+}
+
+message PlayersState {
+    map<int32, Player> players = 1;
+}
+
+enum ClientPacketType {
+    MOVEMENT_INPUT = 0;
+}
+
+enum ServerPacketType {
+    PLAYERS = 0;
+    PLAYER_DISCONNECTED = 1;
+    INITIALIZE = 2;
+}
+
+message ClientPacket {
+    optional int64 time = 1;
+    ClientPacketType type = 2;
+
+    oneof data {
+        MovementInput movementInput = 3;
+    }
+}
+
+message ServerPacket {
+    optional int64 time = 1;
+    ServerPacketType type = 2;
+
+    oneof data {
+        PlayersState players = 3;
+        int32 id = 4;
+    }
+}
+
