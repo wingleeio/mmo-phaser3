@@ -78,10 +78,10 @@ export class Player extends jspb.Message {
   getDirection(): DirectionMap[keyof DirectionMap];
   setDirection(value: DirectionMap[keyof DirectionMap]): void;
 
-  hasMovement(): boolean;
-  clearMovement(): void;
-  getMovement(): Movement | undefined;
-  setMovement(value?: Movement): void;
+  hasMoving(): boolean;
+  clearMoving(): void;
+  getMoving(): Movement | undefined;
+  setMoving(value?: Movement): void;
 
   getSpeed(): number;
   setSpeed(value: number): void;
@@ -104,7 +104,7 @@ export namespace Player {
     y: number,
     sprite: number,
     direction: DirectionMap[keyof DirectionMap],
-    movement?: Movement.AsObject,
+    moving?: Movement.AsObject,
     speed: number,
   }
 }
@@ -128,12 +128,75 @@ export namespace PlayersState {
   }
 }
 
-export class ClientPacket extends jspb.Message {
+export class Position extends jspb.Message {
+  getId(): number;
+  setId(value: number): void;
+
+  getX(): number;
+  setX(value: number): void;
+
+  getY(): number;
+  setY(value: number): void;
+
+  getDirection(): DirectionMap[keyof DirectionMap];
+  setDirection(value: DirectionMap[keyof DirectionMap]): void;
+
+  getMoving(): boolean;
+  setMoving(value: boolean): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Position.AsObject;
+  static toObject(includeInstance: boolean, msg: Position): Position.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Position, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Position;
+  static deserializeBinaryFromReader(message: Position, reader: jspb.BinaryReader): Position;
+}
+
+export namespace Position {
+  export type AsObject = {
+    id: number,
+    x: number,
+    y: number,
+    direction: DirectionMap[keyof DirectionMap],
+    moving: boolean,
+  }
+}
+
+export class Snapshot extends jspb.Message {
+  getId(): string;
+  setId(value: string): void;
+
   hasTime(): boolean;
   clearTime(): void;
   getTime(): number;
   setTime(value: number): void;
 
+  clearStateList(): void;
+  getStateList(): Array<Position>;
+  setStateList(value: Array<Position>): void;
+  addState(value?: Position, index?: number): Position;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Snapshot.AsObject;
+  static toObject(includeInstance: boolean, msg: Snapshot): Snapshot.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Snapshot, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Snapshot;
+  static deserializeBinaryFromReader(message: Snapshot, reader: jspb.BinaryReader): Snapshot;
+}
+
+export namespace Snapshot {
+  export type AsObject = {
+    id: string,
+    time: number,
+    stateList: Array<Position.AsObject>,
+  }
+}
+
+export class ClientPacket extends jspb.Message {
   getType(): ClientPacketTypeMap[keyof ClientPacketTypeMap];
   setType(value: ClientPacketTypeMap[keyof ClientPacketTypeMap]): void;
 
@@ -155,7 +218,6 @@ export class ClientPacket extends jspb.Message {
 
 export namespace ClientPacket {
   export type AsObject = {
-    time: number,
     type: ClientPacketTypeMap[keyof ClientPacketTypeMap],
     movementinput?: MovementInput.AsObject,
   }
@@ -167,11 +229,6 @@ export namespace ClientPacket {
 }
 
 export class ServerPacket extends jspb.Message {
-  hasTime(): boolean;
-  clearTime(): void;
-  getTime(): number;
-  setTime(value: number): void;
-
   getType(): ServerPacketTypeMap[keyof ServerPacketTypeMap];
   setType(value: ServerPacketTypeMap[keyof ServerPacketTypeMap]): void;
 
@@ -184,6 +241,11 @@ export class ServerPacket extends jspb.Message {
   clearId(): void;
   getId(): number;
   setId(value: number): void;
+
+  hasSnapshot(): boolean;
+  clearSnapshot(): void;
+  getSnapshot(): Snapshot | undefined;
+  setSnapshot(value?: Snapshot): void;
 
   getDataCase(): ServerPacket.DataCase;
   serializeBinary(): Uint8Array;
@@ -198,16 +260,17 @@ export class ServerPacket extends jspb.Message {
 
 export namespace ServerPacket {
   export type AsObject = {
-    time: number,
     type: ServerPacketTypeMap[keyof ServerPacketTypeMap],
     players?: PlayersState.AsObject,
     id: number,
+    snapshot?: Snapshot.AsObject,
   }
 
   export enum DataCase {
     DATA_NOT_SET = 0,
     PLAYERS = 3,
     ID = 4,
+    SNAPSHOT = 5,
   }
 }
 
@@ -227,7 +290,7 @@ export interface ClientPacketTypeMap {
 export const ClientPacketType: ClientPacketTypeMap;
 
 export interface ServerPacketTypeMap {
-  PLAYERS: 0;
+  PLAYER_MOVEMENT: 0;
   PLAYER_DISCONNECTED: 1;
   INITIALIZE: 2;
 }

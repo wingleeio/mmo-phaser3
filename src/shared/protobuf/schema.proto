@@ -26,7 +26,7 @@ message Player {
     double y = 4;
     int32 sprite = 5;
     Direction direction = 6;
-    Movement movement = 7;
+    Movement moving = 7;
     double speed = 8;
 }
 
@@ -34,18 +34,31 @@ message PlayersState {
     map<int32, Player> players = 1;
 }
 
+message Position {
+    int32 id = 1;
+    double x = 2;
+    double y = 3;
+    Direction direction = 4;
+    bool moving = 5;
+}
+
+message Snapshot {
+    string id = 1;
+    optional int64 time = 2;
+    repeated Position state = 3;
+}
+
 enum ClientPacketType {
     MOVEMENT_INPUT = 0;
 }
 
 enum ServerPacketType {
-    PLAYERS = 0;
+    PLAYER_MOVEMENT = 0;
     PLAYER_DISCONNECTED = 1;
     INITIALIZE = 2;
 }
 
 message ClientPacket {
-    optional int64 time = 1;
     ClientPacketType type = 2;
 
     oneof data {
@@ -54,12 +67,12 @@ message ClientPacket {
 }
 
 message ServerPacket {
-    optional int64 time = 1;
     ServerPacketType type = 2;
 
     oneof data {
         PlayersState players = 3;
         int32 id = 4;
+        Snapshot snapshot = 5;
     }
 }
 
