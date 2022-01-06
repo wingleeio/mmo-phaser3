@@ -214,7 +214,7 @@ export class World extends Scene {
               x: Number(x),
               y: Number(y),
               texture: "player",
-              sprite: Math.floor(Math.random() * 7),
+              sprite: Math.floor(Math.random() * 7) + 1,
             });
 
             players[Number(id)] = player;
