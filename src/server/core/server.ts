@@ -21,7 +21,7 @@ app.get("/", (req, res) => {
   res.sendFile(path.resolve("./dist/client/index.html"));
 });
 
-server.listen(3000);
+server.listen(process.env.PORT || 3000);
 
 server.on("upgrade", (request, socket, head) => {
   io.handleUpgrade(request, socket, head, (websocket) => {
@@ -29,4 +29,4 @@ server.on("upgrade", (request, socket, head) => {
   });
 });
 
-console.log(`Application running on port ${3000}`);
+console.log(`Application running on port ${process.env.PORT || 3000}`);
