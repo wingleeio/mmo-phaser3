@@ -76,7 +76,7 @@ class World extends Phaser.Scene {
                 player.body.velocity.x = 0;
             }
         }
-        if (tick % 6 === 0) {
+        if (tick % 4 === 0) {
             this.broadcastPlayerMovement();
         }
     }

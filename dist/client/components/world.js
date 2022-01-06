@@ -17,7 +17,7 @@ const snapshot_interpolation_1 = require("@geckos.io/snapshot-interpolation");
 const serialization_1 = require("@shared/utils/serialization");
 const players = {};
 const disconnected = {};
-const SI = new snapshot_interpolation_1.SnapshotInterpolation(100);
+const SI = new snapshot_interpolation_1.SnapshotInterpolation(15);
 class World extends phaser_1.Scene {
     constructor() {
         super({ key: "World" });
@@ -122,8 +122,8 @@ class World extends phaser_1.Scene {
                 });
             }
         };
-        this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
-        // this.server = new WebSocket("ws://localhost:3000/ws");
+        // this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
+        this.server = new WebSocket("ws://localhost:3000/ws");
         this.initConnection();
     }
     preload() {

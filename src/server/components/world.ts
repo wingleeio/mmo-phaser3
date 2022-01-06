@@ -91,7 +91,7 @@ export class World extends Phaser.Scene {
       }
     }
 
-    if (tick % 6 === 0) {
+    if (tick % 4 === 0) {
       this.broadcastPlayerMovement();
     }
   }

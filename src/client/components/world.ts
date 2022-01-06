@@ -7,7 +7,7 @@ import { decodeBinary } from "@shared/utils/serialization";
 
 const players: { [key: number]: Player } = {};
 const disconnected: any = {};
-const SI: SnapshotInterpolation = new SnapshotInterpolation(100);
+const SI: SnapshotInterpolation = new SnapshotInterpolation(15);
 
 export class World extends Scene {
   server: WebSocket;
@@ -16,8 +16,8 @@ export class World extends Scene {
 
   constructor() {
     super({ key: "World" });
-    this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
-    // this.server = new WebSocket("ws://localhost:3000/ws");
+    // this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
+    this.server = new WebSocket("ws://localhost:3000/ws");
     this.initConnection();
   }
 
