@@ -12,15 +12,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     sprite: number;
     frame?: string | number;
   }) {
-    const { id, scene, x, y, sprite } = config;
-    super(scene, x, y, sprite.toString());
+    super(config.scene, config.x, config.y, config.sprite.toString());
+    const { id, x, y, sprite } = config;
     this.instance = new Schema.Player();
     this.instance.setId(id);
     this.instance.setX(x);
     this.instance.setY(y);
     this.instance.setDirection(Schema.Direction.DOWN);
     this.instance.setMoving(new Schema.Movement());
-    this.instance.setSpeed(150);
+    this.instance.setSpeed(80);
     this.instance.setSprite(sprite);
     this.init();
   }
@@ -73,4 +73,49 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       ),
     });
   }
+
+  updateAnimations: any = (): void => {
+    const moving = this.instance.getMoving().toObject();
+    const direction = this.instance.getDirection();
+
+    if (moving.up || moving.down || moving.left || moving.right) {
+      switch (direction) {
+        case Schema.Direction.UP:
+          if (!this.anims.isPlaying || this.anims?.currentAnim?.key !== "up") {
+            this.anims.play("up");
+          }
+          break;
+        case Schema.Direction.DOWN:
+          if (
+            !this.anims.isPlaying ||
+            this.anims?.currentAnim?.key !== "down"
+          ) {
+            this.anims.play("down");
+          }
+          break;
+        case Schema.Direction.LEFT:
+          if (
+            !this.anims.isPlaying ||
+            this.anims?.currentAnim?.key !== "left"
+          ) {
+            this.anims.play("left");
+          }
+          break;
+        case Schema.Direction.RIGHT:
+          if (
+            !this.anims.isPlaying ||
+            this.anims?.currentAnim?.key !== "right"
+          ) {
+            this.anims.play("right");
+          }
+          break;
+        default:
+          break;
+      }
+    } else {
+      if (this.anims.isPlaying) {
+        this.anims.stop();
+      }
+    }
+  };
 }

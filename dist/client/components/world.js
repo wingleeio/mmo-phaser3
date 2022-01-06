@@ -10,14 +10,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.World = void 0;
+const snapshot_interpolation_1 = require("@geckos.io/snapshot-interpolation");
 const player_1 = require("./player");
 const phaser_1 = require("phaser");
 const protobuf_1 = require("@shared/protobuf");
-const snapshot_interpolation_1 = require("@geckos.io/snapshot-interpolation");
 const serialization_1 = require("@shared/utils/serialization");
 const players = {};
 const disconnected = {};
 const SI = new snapshot_interpolation_1.SnapshotInterpolation(15);
+const clientVault = new snapshot_interpolation_1.Vault();
 class World extends phaser_1.Scene {
     constructor() {
         super({ key: "World" });
@@ -57,51 +58,70 @@ class World extends phaser_1.Scene {
                     break;
             }
         });
+        this.serverReconciliation = () => {
+            const player = players[this.me];
+            if (!player)
+                return;
+            const serverSnapshot = SI.vault.get();
+            const clientSnapshot = clientVault.get(serverSnapshot.time, true);
+            if (serverSnapshot && clientSnapshot) {
+                const serverPos = serverSnapshot.state.find((e) => Number(e.id) === this.me);
+                const offsetX = clientSnapshot.state[0].x - serverPos.x;
+                const offsetY = clientSnapshot.state[0].y - serverPos.y;
+                const moving = player.instance.getMoving().toObject();
+                const isMoving = moving.left || moving.right || moving.up || moving.down;
+                const correction = isMoving ? 60 : 180;
+                player.x -= offsetX / correction;
+                player.y -= offsetY / correction;
+            }
+        };
+        this.clientPrediction = () => {
+            const player = players[this.me];
+            if (!player)
+                return;
+            const moving = player.instance.getMoving().toObject();
+            const speed = player.instance.getSpeed();
+            if (moving.up) {
+                player.setVelocityY(-speed);
+                player.instance.setDirection(protobuf_1.Schema.Direction.UP);
+            }
+            if (moving.down) {
+                player.setVelocityY(speed);
+                player.instance.setDirection(protobuf_1.Schema.Direction.DOWN);
+            }
+            if (moving.left) {
+                player.setVelocityX(-speed);
+                player.instance.setDirection(protobuf_1.Schema.Direction.LEFT);
+            }
+            if (moving.right) {
+                player.setVelocityX(speed);
+                player.instance.setDirection(protobuf_1.Schema.Direction.RIGHT);
+            }
+            if (!moving.up && !moving.down) {
+                player.setVelocityY(0);
+            }
+            if (!moving.left && !moving.right) {
+                player.setVelocityX(0);
+            }
+            player.updateAnimations();
+            clientVault.add(SI.snapshot.create([{ id: this.me.toString(), x: player.x, y: player.y }]));
+        };
         this.update = (time, delta) => {
+            this.clientPrediction();
+            this.serverReconciliation();
             const snapshot = SI.calcInterpolation("x y");
             if (snapshot) {
                 const { state } = snapshot;
                 state.forEach((s) => {
-                    var _a, _b, _c, _d, _e, _f, _g, _h;
                     const { id, x, y, direction, moving } = s;
                     if (players[Number(id)]) {
+                        if (this.me === Number(id))
+                            return;
                         players[Number(id)].x = Number(x);
                         players[Number(id)].y = Number(y);
-                        if (moving) {
-                            switch (direction) {
-                                case protobuf_1.Schema.Direction.UP:
-                                    if (!players[Number(id)].anims.isPlaying ||
-                                        ((_b = (_a = players[Number(id)].anims) === null || _a === void 0 ? void 0 : _a.currentAnim) === null || _b === void 0 ? void 0 : _b.key) !== "up") {
-                                        players[Number(id)].anims.play("up");
-                                    }
-                                    break;
-                                case protobuf_1.Schema.Direction.DOWN:
-                                    if (!players[Number(id)].anims.isPlaying ||
-                                        ((_d = (_c = players[Number(id)].anims) === null || _c === void 0 ? void 0 : _c.currentAnim) === null || _d === void 0 ? void 0 : _d.key) !== "down") {
-                                        players[Number(id)].anims.play("down");
-                                    }
-                                    break;
-                                case protobuf_1.Schema.Direction.LEFT:
-                                    if (!players[Number(id)].anims.isPlaying ||
-                                        ((_f = (_e = players[Number(id)].anims) === null || _e === void 0 ? void 0 : _e.currentAnim) === null || _f === void 0 ? void 0 : _f.key) !== "left") {
-                                        players[Number(id)].anims.play("left");
-                                    }
-                                    break;
-                                case protobuf_1.Schema.Direction.RIGHT:
-                                    if (!players[Number(id)].anims.isPlaying ||
-                                        ((_h = (_g = players[Number(id)].anims) === null || _g === void 0 ? void 0 : _g.currentAnim) === null || _h === void 0 ? void 0 : _h.key) !== "right") {
-                                        players[Number(id)].anims.play("right");
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        else {
-                            if (players[Number(id)].anims.isPlaying) {
-                                players[Number(id)].anims.stop();
-                            }
-                        }
+                        players[Number(id)].instance.setDirection(direction);
+                        players[Number(id)].instance.getMoving().setDown(Boolean(moving));
+                        players[Number(id)].updateAnimations();
                     }
                     else {
                         if (!disconnected[Number(id)]) {
@@ -168,29 +188,37 @@ class World extends phaser_1.Scene {
         this.input.keyboard.addListener("keydown", () => {
             if (this.inputs.down.isDown) {
                 this.sendMovingPacket(protobuf_1.Schema.Direction.DOWN, true);
+                players[this.me].instance.getMoving().setDown(true);
             }
             if (this.inputs.up.isDown) {
                 this.sendMovingPacket(protobuf_1.Schema.Direction.UP, true);
+                players[this.me].instance.getMoving().setUp(true);
             }
             if (this.inputs.left.isDown) {
                 this.sendMovingPacket(protobuf_1.Schema.Direction.LEFT, true);
+                players[this.me].instance.getMoving().setLeft(true);
             }
             if (this.inputs.right.isDown) {
                 this.sendMovingPacket(protobuf_1.Schema.Direction.RIGHT, true);
+                players[this.me].instance.getMoving().setRight(true);
             }
         });
         this.input.keyboard.addListener("keyup", () => {
             if (this.inputs.down.isUp) {
                 this.sendMovingPacket(protobuf_1.Schema.Direction.DOWN, false);
+                players[this.me].instance.getMoving().setDown(false);
             }
             if (this.inputs.up.isUp) {
                 this.sendMovingPacket(protobuf_1.Schema.Direction.UP, false);
+                players[this.me].instance.getMoving().setUp(false);
             }
             if (this.inputs.left.isUp) {
                 this.sendMovingPacket(protobuf_1.Schema.Direction.LEFT, false);
+                players[this.me].instance.getMoving().setLeft(false);
             }
             if (this.inputs.right.isUp) {
                 this.sendMovingPacket(protobuf_1.Schema.Direction.RIGHT, false);
+                players[this.me].instance.getMoving().setRight(false);
             }
         });
     }
