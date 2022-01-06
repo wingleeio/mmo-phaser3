@@ -20,11 +20,11 @@ exports.app.use("/", express_1.default.static(path_1.default.join(__dirname, "..
 exports.app.get("/", (req, res) => {
     res.sendFile(path_1.default.resolve("./dist/client/index.html"));
 });
-exports.server.listen(3000);
+exports.server.listen(process.env.PORT || 3000);
 exports.server.on("upgrade", (request, socket, head) => {
     exports.io.handleUpgrade(request, socket, head, (websocket) => {
         exports.io.emit("connection", websocket, request);
     });
 });
-console.log(`Application running on port ${3000}`);
+console.log(`Application running on port ${process.env.PORT || 3000}`);
 //# sourceMappingURL=server.js.map
