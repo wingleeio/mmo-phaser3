@@ -68,11 +68,12 @@ class World extends Phaser.Scene {
                 player.instance.setDirection(protobuf_1.Schema.Direction.RIGHT);
             }
             if (!player.instance.getMoving().getUp() &&
-                !player.instance.getMoving().getDown() &&
-                !player.instance.getMoving().getLeft() &&
+                !player.instance.getMoving().getDown()) {
+                player.body.velocity.y = 0;
+            }
+            if (!player.instance.getMoving().getLeft() &&
                 !player.instance.getMoving().getRight()) {
                 player.body.velocity.x = 0;
-                player.body.velocity.y = 0;
             }
         }
         if (tick % 6 === 0) {
