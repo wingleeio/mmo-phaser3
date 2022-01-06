@@ -135,7 +135,8 @@ class World extends phaser_1.Scene {
                             });
                             players[Number(id)] = player;
                             if (Number(id) === this.me) {
-                                this.cameras.main.startFollow(player, true);
+                                this.cameras.main.startFollow(player, true, 1, 1);
+                                this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
                             }
                         }
                     }
@@ -196,11 +197,11 @@ class World extends phaser_1.Scene {
     }
     initMap() {
         this.cameras.main.zoom = 4;
-        const map = this.make.tilemap({ key: "map" });
-        const tileset = map.addTilesetImage("rpg_tileset", "tiles");
-        map.createLayer("Ground", tileset);
-        map.createLayer("Layer1", tileset);
-        map.createLayer("Layer2", tileset);
+        this.map = this.make.tilemap({ key: "map" });
+        const tileset = this.map.addTilesetImage("rpg_tileset", "tiles");
+        this.map.createLayer("Ground", tileset);
+        this.map.createLayer("Layer1", tileset);
+        this.map.createLayer("Layer2", tileset);
     }
     initConnection() {
         this.server.addEventListener("message", this.handleMessage);
