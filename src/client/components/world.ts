@@ -26,38 +26,10 @@ export class World extends Scene {
   }
 
   preload() {
-    this.load.image("tiles", "assets/tilesets/atlas_16x.png");
-    this.load.tilemapTiledJSON("map", "assets/tilemaps/map1.json");
-    this.load.spritesheet("1", "assets/sprites/1.png", {
-      frameWidth: 24,
-      frameHeight: 24,
-    });
-    this.load.spritesheet("2", "assets/sprites/2.png", {
-      frameWidth: 24,
-      frameHeight: 24,
-    });
-    this.load.spritesheet("3", "assets/sprites/3.png", {
-      frameWidth: 24,
-      frameHeight: 24,
-    });
-    this.load.spritesheet("4", "assets/sprites/4.png", {
-      frameWidth: 24,
-      frameHeight: 24,
-    });
-    this.load.spritesheet("5", "assets/sprites/5.png", {
-      frameWidth: 24,
-      frameHeight: 24,
-    });
-    this.load.spritesheet("6", "assets/sprites/6.png", {
-      frameWidth: 24,
-      frameHeight: 24,
-    });
-    this.load.spritesheet("7", "assets/sprites/7.png", {
-      frameWidth: 24,
-      frameHeight: 24,
-    });
-    this.load.spritesheet("8", "assets/sprites/8.png", {
-      frameWidth: 24,
+    this.load.image("tiles", "assets/tilesets/rpg_tileset.png");
+    this.load.tilemapTiledJSON("map", "assets/tilemaps/mmo.json");
+    this.load.spritesheet("1", "assets/sprites/spritesheet.png", {
+      frameWidth: 16,
       frameHeight: 24,
     });
   }
@@ -123,9 +95,10 @@ export class World extends Scene {
   initMap() {
     this.cameras.main.zoom = 4;
     const map = this.make.tilemap({ key: "map" });
-    const tileset = map.addTilesetImage("atlas_16x", "tiles");
-    map.createLayer("Tile Layer 1", tileset);
-    map.createLayer("Tile Layer 2", tileset);
+    const tileset = map.addTilesetImage("rpg_tileset", "tiles");
+    map.createLayer("Ground", tileset);
+    map.createLayer("Layer1", tileset);
+    map.createLayer("Layer2", tileset);
   }
 
   initConnection() {
