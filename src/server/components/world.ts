@@ -31,8 +31,8 @@ export class World extends Phaser.Scene {
     players[id] = new Player({
       id,
       scene: this,
-      x: 750,
-      y: 750,
+      x: 3487,
+      y: 1812,
       texture: "player",
       sprite: Math.floor(Math.random() * 8),
     });

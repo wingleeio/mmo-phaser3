@@ -7,7 +7,6 @@ import { Entity } from "@geckos.io/snapshot-interpolation/lib/types";
 import { Player } from "./player";
 import { Scene } from "phaser";
 import { Schema } from "@shared/protobuf";
-import WebFont from "webfontloader";
 import { decodeBinary } from "@shared/utils/serialization";
 
 const players: { [key: number]: Player } = {};
@@ -35,18 +34,12 @@ export class World extends Scene {
       frameWidth: 16,
       frameHeight: 24,
     });
-    WebFont.load({
-      custom: {
-        families: ["Dogica"],
-        urls: ["/assets/css/fonts.css"],
-      },
-    });
   }
 
   create() {
     this.initMap();
     this.inputs = this.input.keyboard.createCursorKeys();
-    const test = this.add.text(10, 10, "this is a text", {
+    const test = this.add.text(16, 16, "THANK YOU FOR TESTING", {
       font: "30px Dogica",
     });
     test.setScrollFactor(0);
@@ -106,12 +99,6 @@ export class World extends Scene {
     this.map.createLayer("Ground", tileset).setScale(4, 4);
     this.map.createLayer("Layer1", tileset).setScale(4, 4);
     this.map.createLayer("Layer2", tileset).setScale(4, 4);
-    this.physics.world.setBounds(
-      0,
-      0,
-      this.map.widthInPixels,
-      this.map.heightInPixels
-    );
   }
 
   initConnection() {
@@ -261,8 +248,8 @@ export class World extends Scene {
               this.cameras.main.setBounds(
                 0,
                 0,
-                this.map.widthInPixels,
-                this.map.heightInPixels
+                this.map.widthInPixels * 4,
+                this.map.heightInPixels * 4
               );
             }
           }
