@@ -21,7 +21,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.instance.setY(y);
     this.instance.setDirection(Schema.Direction.DOWN);
     this.instance.setMoving(new Schema.Movement());
-    this.instance.setSpeed(80);
+    this.instance.setSpeed(60);
     this.instance.setSprite(sprite);
     this.init();
   }
@@ -110,11 +110,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   updateAnimations: any = (): void => {
     const moving = this.instance.getMoving().toObject();
     const direction = this.instance.getDirection();
-
     switch (direction) {
       case Schema.Direction.UP:
         if (moving.up || moving.down || moving.left || moving.right) {
-          if (!this.anims.isPlaying || this.anims?.currentAnim?.key !== "up") {
+          if (this.anims?.currentAnim?.key !== "up") {
             this.anims.play("up");
           }
         } else {
@@ -125,10 +124,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         break;
       case Schema.Direction.DOWN:
         if (moving.up || moving.down || moving.left || moving.right) {
-          if (
-            !this.anims.isPlaying ||
-            this.anims?.currentAnim?.key !== "down"
-          ) {
+          if (this.anims?.currentAnim?.key !== "down") {
             this.anims.play("down");
           }
         } else {
@@ -139,10 +135,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         break;
       case Schema.Direction.LEFT:
         if (moving.up || moving.down || moving.left || moving.right) {
-          if (
-            !this.anims.isPlaying ||
-            this.anims?.currentAnim?.key !== "left"
-          ) {
+          if (this.anims?.currentAnim?.key !== "left") {
             this.anims.play("left");
           }
         } else {
@@ -153,10 +146,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         break;
       case Schema.Direction.RIGHT:
         if (moving.up || moving.down || moving.left || moving.right) {
-          if (
-            !this.anims.isPlaying ||
-            this.anims?.currentAnim?.key !== "right"
-          ) {
+          if (this.anims?.currentAnim?.key !== "right") {
             this.anims.play("right");
           }
         } else {

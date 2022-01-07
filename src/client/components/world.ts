@@ -22,8 +22,8 @@ export class World extends Scene {
 
   constructor() {
     super({ key: "World" });
-    this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
-    // this.server = new WebSocket("ws://localhost:3000/ws");
+    // this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
+    this.server = new WebSocket("ws://localhost:3000/ws");
     this.initConnection();
   }
 
@@ -39,50 +39,6 @@ export class World extends Scene {
   create() {
     this.initMap();
     this.inputs = this.input.keyboard.createCursorKeys();
-
-    this.input.keyboard.addListener("keydown", () => {
-      if (this.inputs.down.isDown) {
-        this.sendMovingPacket(Schema.Direction.DOWN, true);
-        players[this.me].instance.getMoving().setDown(true);
-      }
-
-      if (this.inputs.up.isDown) {
-        this.sendMovingPacket(Schema.Direction.UP, true);
-        players[this.me].instance.getMoving().setUp(true);
-      }
-
-      if (this.inputs.left.isDown) {
-        this.sendMovingPacket(Schema.Direction.LEFT, true);
-        players[this.me].instance.getMoving().setLeft(true);
-      }
-
-      if (this.inputs.right.isDown) {
-        this.sendMovingPacket(Schema.Direction.RIGHT, true);
-        players[this.me].instance.getMoving().setRight(true);
-      }
-    });
-
-    this.input.keyboard.addListener("keyup", () => {
-      if (this.inputs.down.isUp) {
-        this.sendMovingPacket(Schema.Direction.DOWN, false);
-        players[this.me].instance.getMoving().setDown(false);
-      }
-
-      if (this.inputs.up.isUp) {
-        this.sendMovingPacket(Schema.Direction.UP, false);
-        players[this.me].instance.getMoving().setUp(false);
-      }
-
-      if (this.inputs.left.isUp) {
-        this.sendMovingPacket(Schema.Direction.LEFT, false);
-        players[this.me].instance.getMoving().setLeft(false);
-      }
-
-      if (this.inputs.right.isUp) {
-        this.sendMovingPacket(Schema.Direction.RIGHT, false);
-        players[this.me].instance.getMoving().setRight(false);
-      }
-    });
   }
 
   sendMovingPacket = (direction: any, isMoving: boolean) => {
@@ -94,6 +50,45 @@ export class World extends Scene {
     this.server.send(packet.serializeBinary());
   };
 
+  handleCursors = () => {
+    const player = players[this.me];
+    if (!player) return;
+    if (this.inputs.up.isDown && !player.instance.getMoving().getUp()) {
+      this.sendMovingPacket(Schema.Direction.UP, true);
+      players[this.me].instance.getMoving().setUp(true);
+    } else if (this.inputs.up.isUp && player.instance.getMoving().getUp()) {
+      this.sendMovingPacket(Schema.Direction.UP, false);
+      players[this.me].instance.getMoving().setUp(false);
+    }
+
+    if (this.inputs.down.isDown && !player.instance.getMoving().getDown()) {
+      this.sendMovingPacket(Schema.Direction.DOWN, true);
+      players[this.me].instance.getMoving().setDown(true);
+    } else if (this.inputs.down.isUp && player.instance.getMoving().getDown()) {
+      this.sendMovingPacket(Schema.Direction.DOWN, false);
+      players[this.me].instance.getMoving().setDown(false);
+    }
+
+    if (this.inputs.left.isDown && !player.instance.getMoving().getLeft()) {
+      this.sendMovingPacket(Schema.Direction.LEFT, true);
+      players[this.me].instance.getMoving().setLeft(true);
+    } else if (this.inputs.left.isUp && player.instance.getMoving().getLeft()) {
+      this.sendMovingPacket(Schema.Direction.LEFT, false);
+      players[this.me].instance.getMoving().setLeft(false);
+    }
+
+    if (this.inputs.right.isDown && !player.instance.getMoving().getRight()) {
+      this.sendMovingPacket(Schema.Direction.RIGHT, true);
+      players[this.me].instance.getMoving().setRight(true);
+    } else if (
+      this.inputs.right.isUp &&
+      player.instance.getMoving().getRight()
+    ) {
+      this.sendMovingPacket(Schema.Direction.RIGHT, false);
+      players[this.me].instance.getMoving().setRight(false);
+    }
+  };
+
   initMap() {
     this.cameras.main.zoom = 4;
     this.map = this.make.tilemap({ key: "map" });
@@ -101,6 +96,12 @@ export class World extends Scene {
     this.map.createLayer("Ground", tileset);
     this.map.createLayer("Layer1", tileset);
     this.map.createLayer("Layer2", tileset);
+    this.physics.world.setBounds(
+      0,
+      0,
+      this.map.widthInPixels,
+      this.map.heightInPixels
+    );
   }
 
   initConnection() {
@@ -212,6 +213,7 @@ export class World extends Scene {
   };
 
   update = (time: number, delta: number): void => {
+    this.handleCursors();
     this.clientPrediction();
     this.serverReconciliation();
     const snapshot = SI.calcInterpolation("x y");
@@ -241,6 +243,7 @@ export class World extends Scene {
             players[Number(id)] = player;
 
             if (Number(id) === this.me) {
+              this.cameras.main.setRoundPixels(true);
               this.cameras.main.startFollow(player, true, 1, 1);
               this.cameras.main.setBounds(
                 0,

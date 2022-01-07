@@ -12,7 +12,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.instance.setY(y);
         this.instance.setDirection(protobuf_1.Schema.Direction.DOWN);
         this.instance.setMoving(new protobuf_1.Schema.Movement());
-        this.instance.setSpeed(80);
+        this.instance.setSpeed(60);
         this.instance.setSprite(sprite);
         this.init();
     }

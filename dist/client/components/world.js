@@ -30,6 +30,44 @@ class World extends phaser_1.Scene {
             packet.getMovementinput().setDirection(direction);
             this.server.send(packet.serializeBinary());
         };
+        this.handleCursors = () => {
+            const player = players[this.me];
+            if (!player)
+                return;
+            if (this.inputs.up.isDown && !player.instance.getMoving().getUp()) {
+                this.sendMovingPacket(protobuf_1.Schema.Direction.UP, true);
+                players[this.me].instance.getMoving().setUp(true);
+            }
+            else if (this.inputs.up.isUp && player.instance.getMoving().getUp()) {
+                this.sendMovingPacket(protobuf_1.Schema.Direction.UP, false);
+                players[this.me].instance.getMoving().setUp(false);
+            }
+            if (this.inputs.down.isDown && !player.instance.getMoving().getDown()) {
+                this.sendMovingPacket(protobuf_1.Schema.Direction.DOWN, true);
+                players[this.me].instance.getMoving().setDown(true);
+            }
+            else if (this.inputs.down.isUp && player.instance.getMoving().getDown()) {
+                this.sendMovingPacket(protobuf_1.Schema.Direction.DOWN, false);
+                players[this.me].instance.getMoving().setDown(false);
+            }
+            if (this.inputs.left.isDown && !player.instance.getMoving().getLeft()) {
+                this.sendMovingPacket(protobuf_1.Schema.Direction.LEFT, true);
+                players[this.me].instance.getMoving().setLeft(true);
+            }
+            else if (this.inputs.left.isUp && player.instance.getMoving().getLeft()) {
+                this.sendMovingPacket(protobuf_1.Schema.Direction.LEFT, false);
+                players[this.me].instance.getMoving().setLeft(false);
+            }
+            if (this.inputs.right.isDown && !player.instance.getMoving().getRight()) {
+                this.sendMovingPacket(protobuf_1.Schema.Direction.RIGHT, true);
+                players[this.me].instance.getMoving().setRight(true);
+            }
+            else if (this.inputs.right.isUp &&
+                player.instance.getMoving().getRight()) {
+                this.sendMovingPacket(protobuf_1.Schema.Direction.RIGHT, false);
+                players[this.me].instance.getMoving().setRight(false);
+            }
+        };
         this.handleMessage = (e) => __awaiter(this, void 0, void 0, function* () {
             const packet = yield (0, serialization_1.decodeBinary)(e.data, protobuf_1.Schema.ServerPacket);
             switch (packet.getType()) {
@@ -107,6 +145,7 @@ class World extends phaser_1.Scene {
             clientVault.add(SI.snapshot.create([{ id: this.me.toString(), x: player.x, y: player.y }]));
         };
         this.update = (time, delta) => {
+            this.handleCursors();
             this.clientPrediction();
             this.serverReconciliation();
             const snapshot = SI.calcInterpolation("x y");
@@ -135,6 +174,7 @@ class World extends phaser_1.Scene {
                             });
                             players[Number(id)] = player;
                             if (Number(id) === this.me) {
+                                this.cameras.main.setRoundPixels(true);
                                 this.cameras.main.startFollow(player, true, 1, 1);
                                 this.cameras.main.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
                             }
@@ -143,8 +183,8 @@ class World extends phaser_1.Scene {
                 });
             }
         };
-        this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
-        // this.server = new WebSocket("ws://localhost:3000/ws");
+        // this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
+        this.server = new WebSocket("ws://localhost:3000/ws");
         this.initConnection();
     }
     preload() {
@@ -158,42 +198,6 @@ class World extends phaser_1.Scene {
     create() {
         this.initMap();
         this.inputs = this.input.keyboard.createCursorKeys();
-        this.input.keyboard.addListener("keydown", () => {
-            if (this.inputs.down.isDown) {
-                this.sendMovingPacket(protobuf_1.Schema.Direction.DOWN, true);
-                players[this.me].instance.getMoving().setDown(true);
-            }
-            if (this.inputs.up.isDown) {
-                this.sendMovingPacket(protobuf_1.Schema.Direction.UP, true);
-                players[this.me].instance.getMoving().setUp(true);
-            }
-            if (this.inputs.left.isDown) {
-                this.sendMovingPacket(protobuf_1.Schema.Direction.LEFT, true);
-                players[this.me].instance.getMoving().setLeft(true);
-            }
-            if (this.inputs.right.isDown) {
-                this.sendMovingPacket(protobuf_1.Schema.Direction.RIGHT, true);
-                players[this.me].instance.getMoving().setRight(true);
-            }
-        });
-        this.input.keyboard.addListener("keyup", () => {
-            if (this.inputs.down.isUp) {
-                this.sendMovingPacket(protobuf_1.Schema.Direction.DOWN, false);
-                players[this.me].instance.getMoving().setDown(false);
-            }
-            if (this.inputs.up.isUp) {
-                this.sendMovingPacket(protobuf_1.Schema.Direction.UP, false);
-                players[this.me].instance.getMoving().setUp(false);
-            }
-            if (this.inputs.left.isUp) {
-                this.sendMovingPacket(protobuf_1.Schema.Direction.LEFT, false);
-                players[this.me].instance.getMoving().setLeft(false);
-            }
-            if (this.inputs.right.isUp) {
-                this.sendMovingPacket(protobuf_1.Schema.Direction.RIGHT, false);
-                players[this.me].instance.getMoving().setRight(false);
-            }
-        });
     }
     initMap() {
         this.cameras.main.zoom = 4;
@@ -202,6 +206,7 @@ class World extends phaser_1.Scene {
         this.map.createLayer("Ground", tileset);
         this.map.createLayer("Layer1", tileset);
         this.map.createLayer("Layer2", tileset);
+        this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
     }
     initConnection() {
         this.server.addEventListener("message", this.handleMessage);

@@ -12,7 +12,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             switch (direction) {
                 case protobuf_1.Schema.Direction.UP:
                     if (moving.up || moving.down || moving.left || moving.right) {
-                        if (!this.anims.isPlaying || ((_b = (_a = this.anims) === null || _a === void 0 ? void 0 : _a.currentAnim) === null || _b === void 0 ? void 0 : _b.key) !== "up") {
+                        if (((_b = (_a = this.anims) === null || _a === void 0 ? void 0 : _a.currentAnim) === null || _b === void 0 ? void 0 : _b.key) !== "up") {
                             this.anims.play("up");
                         }
                     }
@@ -24,8 +24,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                     break;
                 case protobuf_1.Schema.Direction.DOWN:
                     if (moving.up || moving.down || moving.left || moving.right) {
-                        if (!this.anims.isPlaying ||
-                            ((_f = (_e = this.anims) === null || _e === void 0 ? void 0 : _e.currentAnim) === null || _f === void 0 ? void 0 : _f.key) !== "down") {
+                        if (((_f = (_e = this.anims) === null || _e === void 0 ? void 0 : _e.currentAnim) === null || _f === void 0 ? void 0 : _f.key) !== "down") {
                             this.anims.play("down");
                         }
                     }
@@ -37,8 +36,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                     break;
                 case protobuf_1.Schema.Direction.LEFT:
                     if (moving.up || moving.down || moving.left || moving.right) {
-                        if (!this.anims.isPlaying ||
-                            ((_k = (_j = this.anims) === null || _j === void 0 ? void 0 : _j.currentAnim) === null || _k === void 0 ? void 0 : _k.key) !== "left") {
+                        if (((_k = (_j = this.anims) === null || _j === void 0 ? void 0 : _j.currentAnim) === null || _k === void 0 ? void 0 : _k.key) !== "left") {
                             this.anims.play("left");
                         }
                     }
@@ -50,8 +48,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                     break;
                 case protobuf_1.Schema.Direction.RIGHT:
                     if (moving.up || moving.down || moving.left || moving.right) {
-                        if (!this.anims.isPlaying ||
-                            ((_p = (_o = this.anims) === null || _o === void 0 ? void 0 : _o.currentAnim) === null || _p === void 0 ? void 0 : _p.key) !== "right") {
+                        if (((_p = (_o = this.anims) === null || _o === void 0 ? void 0 : _o.currentAnim) === null || _p === void 0 ? void 0 : _p.key) !== "right") {
                             this.anims.play("right");
                         }
                     }
@@ -72,7 +69,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.instance.setY(y);
         this.instance.setDirection(protobuf_1.Schema.Direction.DOWN);
         this.instance.setMoving(new protobuf_1.Schema.Movement());
-        this.instance.setSpeed(80);
+        this.instance.setSpeed(60);
         this.instance.setSprite(sprite);
         this.init();
     }
