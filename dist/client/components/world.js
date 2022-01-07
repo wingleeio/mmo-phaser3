@@ -204,6 +204,12 @@ class World extends phaser_1.Scene {
             font: "30px Dogica",
         });
         test.setScrollFactor(0);
+        test.setVisible(false);
+        this.add
+            .text(16, 16, "THANK YOU FOR TESTING", {
+            font: "30px Dogica",
+        })
+            .setScrollFactor(0);
     }
     initMap() {
         this.map = this.make.tilemap({ key: "map" });
