@@ -21,9 +21,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.instance.setY(y);
     this.instance.setDirection(Schema.Direction.DOWN);
     this.instance.setMoving(new Schema.Movement());
-    this.instance.setSpeed(60);
+    this.instance.setSpeed(150);
     this.instance.setSprite(sprite);
     this.setDepth(y);
+    this.setScale(4, 4);
     this.init();
   }
 

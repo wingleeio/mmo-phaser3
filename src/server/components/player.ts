@@ -12,7 +12,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     sprite: number;
     frame?: string | number;
   }) {
-    const { id, scene, x, y, texture, sprite, frame } = config;
+    const { id, scene, x, y, texture, sprite } = config;
     super(scene, x, y, texture);
     this.instance = new Schema.Player();
     this.instance.setId(id);
@@ -20,8 +20,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.instance.setY(y);
     this.instance.setDirection(Schema.Direction.DOWN);
     this.instance.setMoving(new Schema.Movement());
-    this.instance.setSpeed(60);
+    this.instance.setSpeed(150);
     this.instance.setSprite(sprite);
+    this.setScale(4, 4);
     this.init();
   }
 

@@ -4,7 +4,7 @@ exports.Player = void 0;
 const protobuf_1 = require("@shared/protobuf");
 class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(config) {
-        const { id, scene, x, y, texture, sprite, frame } = config;
+        const { id, scene, x, y, texture, sprite } = config;
         super(scene, x, y, texture);
         this.instance = new protobuf_1.Schema.Player();
         this.instance.setId(id);
@@ -12,8 +12,9 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.instance.setY(y);
         this.instance.setDirection(protobuf_1.Schema.Direction.DOWN);
         this.instance.setMoving(new protobuf_1.Schema.Movement());
-        this.instance.setSpeed(60);
+        this.instance.setSpeed(150);
         this.instance.setSprite(sprite);
+        this.setScale(4, 4);
         this.init();
     }
     init() {

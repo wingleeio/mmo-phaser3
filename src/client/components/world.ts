@@ -7,6 +7,7 @@ import { Entity } from "@geckos.io/snapshot-interpolation/lib/types";
 import { Player } from "./player";
 import { Scene } from "phaser";
 import { Schema } from "@shared/protobuf";
+import WebFont from "webfontloader";
 import { decodeBinary } from "@shared/utils/serialization";
 
 const players: { [key: number]: Player } = {};
@@ -34,11 +35,21 @@ export class World extends Scene {
       frameWidth: 16,
       frameHeight: 24,
     });
+    WebFont.load({
+      custom: {
+        families: ["Dogica"],
+        urls: ["/assets/css/fonts.css"],
+      },
+    });
   }
 
   create() {
     this.initMap();
     this.inputs = this.input.keyboard.createCursorKeys();
+    const test = this.add.text(10, 10, "this is a text", {
+      font: "30px Dogica",
+    });
+    test.setScrollFactor(0);
   }
 
   sendMovingPacket = (direction: any, isMoving: boolean) => {
@@ -90,12 +101,11 @@ export class World extends Scene {
   };
 
   initMap() {
-    this.cameras.main.zoom = 4;
     this.map = this.make.tilemap({ key: "map" });
     const tileset = this.map.addTilesetImage("rpg_tileset", "tiles");
-    this.map.createLayer("Ground", tileset);
-    this.map.createLayer("Layer1", tileset);
-    this.map.createLayer("Layer2", tileset);
+    this.map.createLayer("Ground", tileset).setScale(4, 4);
+    this.map.createLayer("Layer1", tileset).setScale(4, 4);
+    this.map.createLayer("Layer2", tileset).setScale(4, 4);
     this.physics.world.setBounds(
       0,
       0,

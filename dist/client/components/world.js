@@ -8,12 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.World = void 0;
 const snapshot_interpolation_1 = require("@geckos.io/snapshot-interpolation");
 const player_1 = require("./player");
 const phaser_1 = require("phaser");
 const protobuf_1 = require("@shared/protobuf");
+const webfontloader_1 = __importDefault(require("webfontloader"));
 const serialization_1 = require("@shared/utils/serialization");
 const players = {};
 const disconnected = {};
@@ -196,18 +200,27 @@ class World extends phaser_1.Scene {
             frameWidth: 16,
             frameHeight: 24,
         });
+        webfontloader_1.default.load({
+            custom: {
+                families: ["Dogica"],
+                urls: ["/assets/css/fonts.css"],
+            },
+        });
     }
     create() {
         this.initMap();
         this.inputs = this.input.keyboard.createCursorKeys();
+        const test = this.add.text(10, 10, "this is a text", {
+            font: "30px Dogica",
+        });
+        test.setScrollFactor(0);
     }
     initMap() {
-        this.cameras.main.zoom = 4;
         this.map = this.make.tilemap({ key: "map" });
         const tileset = this.map.addTilesetImage("rpg_tileset", "tiles");
-        this.map.createLayer("Ground", tileset);
-        this.map.createLayer("Layer1", tileset);
-        this.map.createLayer("Layer2", tileset);
+        this.map.createLayer("Ground", tileset).setScale(4, 4);
+        this.map.createLayer("Layer1", tileset).setScale(4, 4);
+        this.map.createLayer("Layer2", tileset).setScale(4, 4);
         this.physics.world.setBounds(0, 0, this.map.widthInPixels, this.map.heightInPixels);
     }
     initConnection() {
