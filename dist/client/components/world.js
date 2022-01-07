@@ -142,6 +142,7 @@ class World extends phaser_1.Scene {
                 player.setVelocityX(0);
             }
             player.updateAnimations();
+            player.setDepth(player.y);
             clientVault.add(SI.snapshot.create([{ id: this.me.toString(), x: player.x, y: player.y }]));
         };
         this.update = (time, delta) => {
@@ -161,6 +162,7 @@ class World extends phaser_1.Scene {
                         players[Number(id)].instance.setDirection(direction);
                         players[Number(id)].instance.getMoving().setDown(Boolean(moving));
                         players[Number(id)].updateAnimations();
+                        players[Number(id)].setDepth(Number(y));
                     }
                     else {
                         if (!disconnected[Number(id)]) {

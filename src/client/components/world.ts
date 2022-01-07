@@ -207,6 +207,8 @@ export class World extends Scene {
 
     player.updateAnimations();
 
+    player.setDepth(player.y);
+
     clientVault.add(
       SI.snapshot.create([{ id: this.me.toString(), x: player.x, y: player.y }])
     );
@@ -229,6 +231,7 @@ export class World extends Scene {
           players[Number(id)].instance.setDirection(direction as any);
           players[Number(id)].instance.getMoving().setDown(Boolean(moving));
           players[Number(id)].updateAnimations();
+          players[Number(id)].setDepth(Number(y));
         } else {
           if (!disconnected[Number(id)]) {
             const player = new Player({
