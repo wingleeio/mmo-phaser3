@@ -183,8 +183,8 @@ class World extends phaser_1.Scene {
                 });
             }
         };
-        // this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
-        this.server = new WebSocket("ws://localhost:3000/ws");
+        this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
+        // this.server = new WebSocket("ws://localhost:3000/ws");
         this.initConnection();
     }
     preload() {
