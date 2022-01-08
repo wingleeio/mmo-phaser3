@@ -3,6 +3,7 @@ import {
   Vault,
 } from "@geckos.io/snapshot-interpolation";
 
+import { Chat } from "./chat";
 import { Entity } from "@geckos.io/snapshot-interpolation/lib/types";
 import { Player } from "./player";
 import { Scene } from "phaser";
@@ -19,6 +20,7 @@ export class World extends Scene {
   inputs: Phaser.Types.Input.Keyboard.CursorKeys;
 
   map: Phaser.Tilemaps.Tilemap;
+  sendingMessage: boolean;
 
   constructor() {
     super({ key: "World" });
@@ -53,11 +55,46 @@ export class World extends Scene {
   create() {
     this.initMap();
     this.inputs = this.input.keyboard.createCursorKeys();
-    this.add
-      .bitmapText(16, 16, "arcade", "THANK YOU FOR TESTING", 16)
-      .setScrollFactor(0)
-      .setDropShadow(0, 2, 0x000000, 0.2);
+    this.scene.launch("chat");
+    this.sendingMessage = false;
+    this.input.keyboard.on("keydown", (event: any) => {
+      const chat: Chat = this.scene.get("chat") as any;
+
+      if (event.keyCode === Phaser.Input.Keyboard.KeyCodes.ESC) {
+        this.sendingMessage = false;
+        chat.messagePrompt.setText("Press enter to type your message");
+      }
+
+      if (event.keyCode === Phaser.Input.Keyboard.KeyCodes.ENTER) {
+        if (!this.sendingMessage) {
+          this.sendingMessage = true;
+          chat.messagePrompt.setText("");
+        } else {
+          if (chat.messagePrompt.text.length > 0) {
+            this.sendMessage(chat.messagePrompt.text);
+          }
+
+          this.sendingMessage = false;
+          chat.messagePrompt.setText("Press enter to type your message");
+        }
+      } else if (
+        (this.sendingMessage && event.keyCode === 32) ||
+        (event.keyCode >= 48 && event.keyCode < 90) ||
+        event.keyCode === 190 ||
+        event.keyCode === 90
+      ) {
+        chat.messagePrompt.setText(chat.messagePrompt.text + event.key);
+      }
+    });
   }
+
+  sendMessage = (message: string) => {
+    const packet = new Schema.ClientPacket();
+    packet.setType(Schema.ClientPacketType.SEND_MESSAGE);
+    packet.setMessage(new Schema.Message());
+    packet.getMessage().setContent(message);
+    this.server.send(packet.serializeBinary());
+  };
 
   sendMovingPacket = (direction: any, isMoving: boolean) => {
     const packet = new Schema.ClientPacket();
@@ -71,6 +108,9 @@ export class World extends Scene {
   handleCursors = () => {
     const player = players[this.me];
     if (!player) return;
+    if (this.sendingMessage === true) {
+      return;
+    }
     if (this.inputs.up.isDown && !player.instance.getMoving().getUp()) {
       this.sendMovingPacket(Schema.Direction.UP, true);
       players[this.me].instance.getMoving().setUp(true);
@@ -143,6 +183,10 @@ export class World extends Scene {
             SI.snapshot.add(state);
           }
         }
+        break;
+      case Schema.ServerPacketType.BROADCAST_MESSAGE:
+        const chat: Chat = this.scene.get("chat") as any;
+        chat.addMessage(packet.getMessage());
         break;
       case Schema.ServerPacketType.PLAYER_DISCONNECTED:
         players[packet.getId()].destroy();

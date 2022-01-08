@@ -49,14 +49,21 @@ message Snapshot {
     repeated Position state = 3;
 }
 
+message Message {
+    optional int32 id = 1;
+    string content = 2;
+}
+
 enum ClientPacketType {
     MOVEMENT_INPUT = 0;
+    SEND_MESSAGE = 1;
 }
 
 enum ServerPacketType {
     PLAYER_MOVEMENT = 0;
     PLAYER_DISCONNECTED = 1;
     INITIALIZE = 2;
+    BROADCAST_MESSAGE = 3;
 }
 
 message ClientPacket {
@@ -64,6 +71,7 @@ message ClientPacket {
 
     oneof data {
         MovementInput movementInput = 3;
+        Message message = 4;
     }
 }
 
@@ -74,6 +82,7 @@ message ServerPacket {
         PlayersState players = 3;
         int32 id = 4;
         Snapshot snapshot = 5;
+        Message message = 6;
     }
 }
 

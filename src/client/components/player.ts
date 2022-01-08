@@ -1,5 +1,4 @@
 import { Schema } from "@shared/protobuf";
-import e from "cors";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   instance: Schema.Player;

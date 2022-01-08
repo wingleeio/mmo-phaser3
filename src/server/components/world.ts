@@ -1,4 +1,5 @@
-import { Direction } from "@shared/protobuf/schema_pb";
+import { Direction, Message } from "@shared/protobuf/schema_pb";
+
 import { Player } from "./player";
 import { Schema } from "@shared/protobuf";
 import { SnapshotInterpolation } from "@geckos.io/snapshot-interpolation";
@@ -134,6 +135,13 @@ export class World extends Phaser.Scene {
     switch (packet.getType()) {
       case Schema.ClientPacketType.MOVEMENT_INPUT:
         this.handleMovementInput(id, packet);
+        break;
+      case Schema.ClientPacketType.SEND_MESSAGE:
+        const newPacket = new Schema.ServerPacket();
+        newPacket.setType(Schema.ServerPacketType.BROADCAST_MESSAGE);
+        newPacket.setMessage(packet.getMessage());
+        newPacket.getMessage().setId(id);
+        this.broadcast(newPacket.serializeBinary());
         break;
       default:
         break;

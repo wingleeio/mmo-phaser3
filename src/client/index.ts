@@ -1,3 +1,4 @@
+import { Chat } from "./components/chat";
 import Phaser from "phaser";
 import { World } from "./components/world";
 
@@ -10,7 +11,7 @@ const config: Phaser.Types.Core.GameConfig = {
     height: "100%",
   },
   parent: "game",
-  scene: [World],
+  scene: [World, Chat],
   render: {
     antialias: false,
     pixelArt: true,

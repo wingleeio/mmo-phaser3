@@ -200,6 +200,32 @@ export namespace Snapshot {
   }
 }
 
+export class Message extends jspb.Message {
+  hasId(): boolean;
+  clearId(): void;
+  getId(): number;
+  setId(value: number): void;
+
+  getContent(): string;
+  setContent(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Message.AsObject;
+  static toObject(includeInstance: boolean, msg: Message): Message.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Message, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Message;
+  static deserializeBinaryFromReader(message: Message, reader: jspb.BinaryReader): Message;
+}
+
+export namespace Message {
+  export type AsObject = {
+    id: number,
+    content: string,
+  }
+}
+
 export class ClientPacket extends jspb.Message {
   getType(): ClientPacketTypeMap[keyof ClientPacketTypeMap];
   setType(value: ClientPacketTypeMap[keyof ClientPacketTypeMap]): void;
@@ -208,6 +234,11 @@ export class ClientPacket extends jspb.Message {
   clearMovementinput(): void;
   getMovementinput(): MovementInput | undefined;
   setMovementinput(value?: MovementInput): void;
+
+  hasMessage(): boolean;
+  clearMessage(): void;
+  getMessage(): Message | undefined;
+  setMessage(value?: Message): void;
 
   getDataCase(): ClientPacket.DataCase;
   serializeBinary(): Uint8Array;
@@ -224,11 +255,13 @@ export namespace ClientPacket {
   export type AsObject = {
     type: ClientPacketTypeMap[keyof ClientPacketTypeMap],
     movementinput?: MovementInput.AsObject,
+    message?: Message.AsObject,
   }
 
   export enum DataCase {
     DATA_NOT_SET = 0,
     MOVEMENTINPUT = 3,
+    MESSAGE = 4,
   }
 }
 
@@ -251,6 +284,11 @@ export class ServerPacket extends jspb.Message {
   getSnapshot(): Snapshot | undefined;
   setSnapshot(value?: Snapshot): void;
 
+  hasMessage(): boolean;
+  clearMessage(): void;
+  getMessage(): Message | undefined;
+  setMessage(value?: Message): void;
+
   getDataCase(): ServerPacket.DataCase;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ServerPacket.AsObject;
@@ -268,6 +306,7 @@ export namespace ServerPacket {
     players?: PlayersState.AsObject,
     id: number,
     snapshot?: Snapshot.AsObject,
+    message?: Message.AsObject,
   }
 
   export enum DataCase {
@@ -275,6 +314,7 @@ export namespace ServerPacket {
     PLAYERS = 3,
     ID = 4,
     SNAPSHOT = 5,
+    MESSAGE = 6,
   }
 }
 
@@ -289,6 +329,7 @@ export const Direction: DirectionMap;
 
 export interface ClientPacketTypeMap {
   MOVEMENT_INPUT: 0;
+  SEND_MESSAGE: 1;
 }
 
 export const ClientPacketType: ClientPacketTypeMap;
@@ -297,6 +338,7 @@ export interface ServerPacketTypeMap {
   PLAYER_MOVEMENT: 0;
   PLAYER_DISCONNECTED: 1;
   INITIALIZE: 2;
+  BROADCAST_MESSAGE: 3;
 }
 
 export const ServerPacketType: ServerPacketTypeMap;
