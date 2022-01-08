@@ -1112,7 +1112,8 @@ proto.Position.toObject = function(includeInstance, msg) {
     x: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
     y: jspb.Message.getFloatingPointFieldWithDefault(msg, 3, 0.0),
     direction: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    moving: jspb.Message.getBooleanFieldWithDefault(msg, 5, false)
+    moving: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
+    sprite: jspb.Message.getFieldWithDefault(msg, 6, 0)
   };
 
   if (includeInstance) {
@@ -1168,6 +1169,10 @@ proto.Position.deserializeBinaryFromReader = function(msg, reader) {
     case 5:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setMoving(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setSprite(value);
       break;
     default:
       reader.skipField();
@@ -1230,6 +1235,13 @@ proto.Position.serializeBinaryToWriter = function(message, writer) {
   if (f) {
     writer.writeBool(
       5,
+      f
+    );
+  }
+  f = message.getSprite();
+  if (f !== 0) {
+    writer.writeInt32(
+      6,
       f
     );
   }
@@ -1323,6 +1335,24 @@ proto.Position.prototype.getMoving = function() {
  */
 proto.Position.prototype.setMoving = function(value) {
   return jspb.Message.setProto3BooleanField(this, 5, value);
+};
+
+
+/**
+ * optional int32 sprite = 6;
+ * @return {number}
+ */
+proto.Position.prototype.getSprite = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.Position} returns this
+ */
+proto.Position.prototype.setSprite = function(value) {
+  return jspb.Message.setProto3IntField(this, 6, value);
 };
 
 

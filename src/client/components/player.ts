@@ -3,13 +3,13 @@ import e from "cors";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   instance: Schema.Player;
+  label: Phaser.GameObjects.BitmapText;
 
   constructor(config: {
     id: number;
     scene: Phaser.Scene;
     x: number;
     y: number;
-    texture: string | Phaser.Textures.Texture;
     sprite: number;
     frame?: string | number;
   }) {
@@ -31,13 +31,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   init() {
     this.scene.add.existing(this);
     this.scene.physics.add.existing(this);
+    const sprite = this.instance.getSprite();
 
+    const walk = `${sprite}_walk`;
+    const idle = `${sprite}_idle`;
     this.anims.create({
       key: "down",
       frameRate: 6,
       repeat: -1,
       yoyo: true,
-      frames: this.anims.generateFrameNumbers("1", { start: 4, end: 7 }),
+      frames: this.anims.generateFrameNumbers(walk, { start: 0, end: 3 }),
     });
 
     this.anims.create({
@@ -45,7 +48,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       frameRate: 6,
       repeat: -1,
       yoyo: true,
-      frames: this.anims.generateFrameNumbers("1", { start: 44, end: 47 }),
+      frames: this.anims.generateFrameNumbers(walk, { start: 4, end: 7 }),
     });
 
     this.anims.create({
@@ -53,7 +56,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       frameRate: 6,
       repeat: -1,
       yoyo: true,
-      frames: this.anims.generateFrameNumbers("1", { start: 84, end: 87 }),
+      frames: this.anims.generateFrameNumbers(walk, { start: 8, end: 11 }),
     });
 
     this.anims.create({
@@ -61,7 +64,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       frameRate: 6,
       repeat: -1,
       yoyo: true,
-      frames: this.anims.generateFrameNumbers("1", { start: 124, end: 127 }),
+      frames: this.anims.generateFrameNumbers(walk, { start: 12, end: 15 }),
     });
 
     this.anims.create({
@@ -69,9 +72,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       frameRate: 6,
       repeat: -1,
       yoyo: true,
-      frames: this.anims.generateFrameNumbers("1", {
-        start: 4 - 4,
-        end: 7 - 4,
+      frames: this.anims.generateFrameNumbers(idle, {
+        start: 0,
+        end: 3,
       }),
     });
 
@@ -80,9 +83,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       frameRate: 6,
       repeat: -1,
       yoyo: true,
-      frames: this.anims.generateFrameNumbers("1", {
-        start: 44 - 4,
-        end: 47 - 4,
+      frames: this.anims.generateFrameNumbers(idle, {
+        start: 4,
+        end: 7,
       }),
     });
 
@@ -91,9 +94,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       frameRate: 6,
       repeat: -1,
       yoyo: true,
-      frames: this.anims.generateFrameNumbers("1", {
-        start: 84 - 4,
-        end: 87 - 4,
+      frames: this.anims.generateFrameNumbers(idle, {
+        start: 8,
+        end: 11,
       }),
     });
 
@@ -102,9 +105,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       frameRate: 6,
       repeat: -1,
       yoyo: true,
-      frames: this.anims.generateFrameNumbers("1", {
-        start: 124 - 4,
-        end: 127 - 4,
+      frames: this.anims.generateFrameNumbers(idle, {
+        start: 12,
+        end: 15,
       }),
     });
   }

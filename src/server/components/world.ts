@@ -34,7 +34,7 @@ export class World extends Phaser.Scene {
       x: 3487,
       y: 1812,
       texture: "player",
-      sprite: Math.floor(Math.random() * 8),
+      sprite: Math.floor(Math.random() * 7) + 1,
     });
 
     console.log(`Client ${id} connected`);
@@ -112,6 +112,7 @@ export class World extends Phaser.Scene {
       position.setX(player.x);
       position.setY(player.y);
       position.setDirection(player.instance.getDirection());
+      position.setSprite(player.instance.getSprite());
       position.setMoving(
         player.instance.getMoving().getUp() ||
           player.instance.getMoving().getDown() ||

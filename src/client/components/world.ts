@@ -30,25 +30,33 @@ export class World extends Scene {
   preload() {
     this.load.image("tiles", "assets/tilesets/rpg_tileset.png");
     this.load.tilemapTiledJSON("map", "assets/tilemaps/mmo.json");
-    this.load.spritesheet("1", "assets/sprites/spritesheet.png", {
-      frameWidth: 16,
-      frameHeight: 24,
-    });
+
+    for (let i = 1; i <= 9; i++) {
+      this.load.spritesheet(`${i}_idle`, `assets/sprites/${i}_idle.png`, {
+        frameWidth: 16,
+        frameHeight: 24,
+      });
+
+      this.load.spritesheet(`${i}_walk`, `assets/sprites/${i}_walk.png`, {
+        frameWidth: 16,
+        frameHeight: 24,
+      });
+    }
+
+    this.load.bitmapFont(
+      "arcade",
+      "assets/fonts/arcade.png",
+      "assets/fonts/arcade.xml"
+    );
   }
 
   create() {
     this.initMap();
     this.inputs = this.input.keyboard.createCursorKeys();
-    const test = this.add.text(16, 16, "THANK YOU FOR TESTING", {
-      font: "30px Dogica",
-    });
-    test.setScrollFactor(0);
-    test.setVisible(false);
     this.add
-      .text(16, 16, "THANK YOU FOR TESTING", {
-        font: "30px Dogica",
-      })
-      .setScrollFactor(0);
+      .bitmapText(16, 16, "arcade", "THANK YOU FOR TESTING", 16)
+      .setScrollFactor(0)
+      .setDropShadow(0, 2, 0x000000, 0.2);
   }
 
   sendMovingPacket = (direction: any, isMoving: boolean) => {
@@ -138,6 +146,7 @@ export class World extends Scene {
         break;
       case Schema.ServerPacketType.PLAYER_DISCONNECTED:
         players[packet.getId()].destroy();
+        players[packet.getId()].label.destroy();
         delete players[packet.getId()];
         disconnected[packet.getId()] = true;
         break;
@@ -212,6 +221,10 @@ export class World extends Scene {
 
     player.setDepth(player.y);
 
+    player.label.setDepth(Number(player.y));
+    player.label.setX(Number(player.x) - player.label.width / 2);
+    player.label.setY(Number(player.y) - 65);
+
     clientVault.add(
       SI.snapshot.create([{ id: this.me.toString(), x: player.x, y: player.y }])
     );
@@ -226,7 +239,7 @@ export class World extends Scene {
     if (snapshot) {
       const { state } = snapshot;
       state.forEach((s) => {
-        const { id, x, y, direction, moving } = s;
+        const { id, x, y, direction, moving, sprite } = s;
         if (players[Number(id)]) {
           if (this.me === Number(id)) return;
           players[Number(id)].x = Number(x);
@@ -235,6 +248,11 @@ export class World extends Scene {
           players[Number(id)].instance.getMoving().setDown(Boolean(moving));
           players[Number(id)].updateAnimations();
           players[Number(id)].setDepth(Number(y));
+          players[Number(id)].label.setDepth(Number(y));
+          players[Number(id)].label.setX(
+            Number(x) - players[Number(id)].label.width / 2
+          );
+          players[Number(id)].label.setY(Number(y) - 65);
         } else {
           if (!disconnected[Number(id)]) {
             const player = new Player({
@@ -242,11 +260,21 @@ export class World extends Scene {
               scene: this,
               x: Number(x),
               y: Number(y),
-              texture: "player",
-              sprite: Math.floor(Math.random() * 7) + 1,
+              sprite: Number(sprite),
             });
 
             players[Number(id)] = player;
+
+            player.label = this.add
+              .bitmapText(
+                Number(x) - player.displayWidth / 2,
+                Number(y) - 65,
+                "arcade",
+                `Player ${id}`,
+                12
+              )
+              .setDepth(Number(y))
+              .setDropShadow(0, 2, 0x000000, 0.2);
 
             if (Number(id) === this.me) {
               this.cameras.main.setRoundPixels(true);

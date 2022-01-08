@@ -40,6 +40,7 @@ message Position {
     double y = 3;
     Direction direction = 4;
     bool moving = 5;
+    int32 sprite = 6;
 }
 
 message Snapshot {

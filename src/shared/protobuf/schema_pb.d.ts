@@ -144,6 +144,9 @@ export class Position extends jspb.Message {
   getMoving(): boolean;
   setMoving(value: boolean): void;
 
+  getSprite(): number;
+  setSprite(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Position.AsObject;
   static toObject(includeInstance: boolean, msg: Position): Position.AsObject;
@@ -161,6 +164,7 @@ export namespace Position {
     y: number,
     direction: DirectionMap[keyof DirectionMap],
     moving: boolean,
+    sprite: number,
   }
 }
 
