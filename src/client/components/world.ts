@@ -359,7 +359,6 @@ export class World extends Scene {
               )
               .setOrigin(0.5, 0.5);
 
-            const gridSize = 64;
             player.message = this.add.existing(
               new NinePatch(
                 this,
@@ -368,8 +367,8 @@ export class World extends Scene {
                 player.messageContent.width + 100,
                 100,
                 "bubble",
-                [gridSize, gridSize, gridSize, gridSize, gridSize],
-                [gridSize, gridSize, gridSize, gridSize, gridSize]
+                [36, 36, 48, 36, 36],
+                [36, 36, 48, 36, 36]
               )
             );
 

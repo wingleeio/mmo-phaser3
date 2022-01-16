@@ -103,13 +103,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   sentMessage = (message: string) => {
     clearTimeout(this.messageTimeout);
     this.messageContent.setText(message).setAlpha(0.8);
-    this.message.displayWidth = this.messageContent.width + 100;
-    this.message.setAlpha(0.8);
+    this.message.resize(this.messageContent.width + 100, this.message.height);
+    this.message.setAlpha(0.9);
 
     this.messageTimeout = setTimeout(() => {
       this.messageContent.setAlpha(0);
       this.message.setAlpha(0);
-    }, 3000);
+    }, 6000);
   };
 
   updateAnimations: any = (): void => {
