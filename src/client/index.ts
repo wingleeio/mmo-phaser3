@@ -1,6 +1,7 @@
 import { Chat } from "./components/chat";
 import Phaser from "phaser";
 import { World } from "./components/world";
+import WebFont from "webfontloader";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -31,4 +32,11 @@ export class Game extends Phaser.Game {
   }
 }
 
-new Game(config);
+WebFont.load({
+  custom: {
+    families: ["Dogica"],
+  },
+  active: () => {
+    new Game(config);
+  },
+});

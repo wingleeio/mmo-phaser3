@@ -15,5 +15,5 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["src/client/assets/*"]
+  "exclude": ["src/client/assets/**/*"]
 }

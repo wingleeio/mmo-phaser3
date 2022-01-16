@@ -9,6 +9,8 @@ import { Player } from "./player";
 import { Scene } from "phaser";
 import { Schema } from "@shared/protobuf";
 import { decodeBinary } from "@shared/utils/serialization";
+import { StyleConstants } from "../utls/constants";
+import { NinePatch } from "phaser3-rex-plugins/templates/ui/ui-components";
 
 const players: { [key: number]: Player } = {};
 const disconnected: any = {};
@@ -20,36 +22,30 @@ export class World extends Scene {
   inputs: Phaser.Types.Input.Keyboard.CursorKeys;
 
   map: Phaser.Tilemaps.Tilemap;
+  collisionLayer: Phaser.Tilemaps.TilemapLayer;
   sendingMessage: boolean;
 
   constructor() {
     super({ key: "World" });
-    // this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
-    this.server = new WebSocket("ws://localhost:3000/ws");
+    this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
+    // this.server = new WebSocket("ws://localhost:3000/ws");
     this.initConnection();
   }
 
   preload() {
-    this.load.image("tiles", "assets/tilesets/rpg_tileset.png");
-    this.load.tilemapTiledJSON("map", "assets/tilemaps/mmo.json");
+    this.load.image("bubble", "assets/gui/bubble4x.png");
+    this.load.image("rules", "assets/tilesets/rules.png");
+    this.load.image("terrain", "assets/tilesets/terrain.png");
+    this.load.image("outside", "assets/tilesets/outside.png");
+    this.load.image("water", "assets/tilesets/water.png");
+    this.load.tilemapTiledJSON("map", "assets/tilemaps/World.json");
 
-    for (let i = 1; i <= 9; i++) {
-      this.load.spritesheet(`${i}_idle`, `assets/sprites/${i}_idle.png`, {
-        frameWidth: 16,
-        frameHeight: 24,
-      });
-
-      this.load.spritesheet(`${i}_walk`, `assets/sprites/${i}_walk.png`, {
-        frameWidth: 16,
-        frameHeight: 24,
+    for (let i = 1; i <= 8; i++) {
+      this.load.spritesheet(`${i}`, `assets/sprites/${i}.png`, {
+        frameWidth: 26,
+        frameHeight: 36,
       });
     }
-
-    this.load.bitmapFont(
-      "arcade",
-      "assets/fonts/arcade.png",
-      "assets/fonts/arcade.xml"
-    );
   }
 
   create() {
@@ -160,10 +156,34 @@ export class World extends Scene {
 
   initMap() {
     this.map = this.make.tilemap({ key: "map" });
-    const tileset = this.map.addTilesetImage("rpg_tileset", "tiles");
-    this.map.createLayer("Ground", tileset).setScale(4, 4);
-    this.map.createLayer("Layer1", tileset).setScale(4, 4);
-    this.map.createLayer("Layer2", tileset).setScale(4, 4);
+
+    const rules = this.map.addTilesetImage("rules", "rules", 16, 16);
+    const terrain = this.map.addTilesetImage("Terrain", "terrain", 16, 16);
+    const outside = this.map.addTilesetImage("Outdoors", "outside", 16, 16);
+    const water = this.map.addTilesetImage("Water", "water", 16, 16);
+    const tilesets = [rules, terrain, outside, water];
+    this.map.createLayer("ground", tilesets).setScale(4, 4);
+    this.map.createLayer("ground_decor", tilesets).setScale(4, 4);
+    this.map.createLayer("ground_decor_2", tilesets).setScale(4, 4);
+    this.map.createLayer("objects", tilesets).setScale(4, 4);
+    this.map
+      .createLayer("objects_upper", tilesets)
+      .setScale(4, 4)
+      .setDepth(10000000);
+    this.collisionLayer = this.map
+      .createLayer("collision", tilesets)
+      .setScale(4, 4)
+      .setAlpha(0)
+      .setCollisionByProperty({ collides: true });
+
+    this.physics.add.existing(
+      this.add.zone(
+        0,
+        0,
+        this.map.widthInPixels * 4,
+        this.map.heightInPixels * 4
+      )
+    );
   }
 
   initConnection() {
@@ -197,7 +217,9 @@ export class World extends Scene {
         break;
       case Schema.ServerPacketType.BROADCAST_MESSAGE:
         const chat: Chat = this.scene.get("chat") as any;
+        const player = players[packet.getMessage().getId()];
         chat.addMessage(packet.getMessage());
+        player.sentMessage(packet.getMessage().getContent());
         break;
       case Schema.ServerPacketType.PLAYER_DISCONNECTED:
         players[packet.getId()].destroy();
@@ -232,56 +254,61 @@ export class World extends Scene {
 
       const correction = isMoving ? 60 : 180;
 
-      player.x -= offsetX / correction;
-      player.y -= offsetY / correction;
+      player.container.x -= offsetX / correction;
+      player.container.y -= offsetY / correction;
     }
   };
 
   clientPrediction = () => {
     const player = players[this.me];
-
     if (!player) return;
 
     const moving = player.instance.getMoving().toObject();
     const speed = player.instance.getSpeed();
     if (moving.up) {
-      player.setVelocityY(-speed);
+      // @ts-ignore
+      player.container.body.setVelocityY(-speed);
       player.instance.setDirection(Schema.Direction.UP);
     }
 
     if (moving.down) {
-      player.setVelocityY(speed);
+      // @ts-ignore
+      player.container.body.setVelocityY(speed);
       player.instance.setDirection(Schema.Direction.DOWN);
     }
 
     if (moving.left) {
-      player.setVelocityX(-speed);
+      // @ts-ignore
+      player.container.body.setVelocityX(-speed);
       player.instance.setDirection(Schema.Direction.LEFT);
     }
 
     if (moving.right) {
-      player.setVelocityX(speed);
+      // @ts-ignore
+      player.container.body.setVelocityX(speed);
       player.instance.setDirection(Schema.Direction.RIGHT);
     }
 
     if (!moving.up && !moving.down) {
-      player.setVelocityY(0);
+      // @ts-ignore
+      player.container.body.setVelocityY(0);
     }
 
     if (!moving.left && !moving.right) {
-      player.setVelocityX(0);
+      // @ts-ignore
+      player.container.body.setVelocityX(0);
     }
 
     player.updateAnimations();
 
-    player.setDepth(player.y);
-
-    player.label.setDepth(Number(player.y));
-    player.label.setX(Number(player.x) - player.label.width / 2);
-    player.label.setY(Number(player.y) - 65);
-
     clientVault.add(
-      SI.snapshot.create([{ id: this.me.toString(), x: player.x, y: player.y }])
+      SI.snapshot.create([
+        {
+          id: this.me.toString(),
+          x: player.container.x,
+          y: player.container.y,
+        },
+      ])
     );
   };
 
@@ -297,43 +324,73 @@ export class World extends Scene {
         const { id, x, y, direction, moving, sprite } = s;
         if (players[Number(id)]) {
           if (this.me === Number(id)) return;
-          players[Number(id)].x = Number(x);
-          players[Number(id)].y = Number(y);
+          players[Number(id)].container.x = Number(x);
+          players[Number(id)].container.y = Number(y);
           players[Number(id)].instance.setDirection(direction as any);
           players[Number(id)].instance.getMoving().setDown(Boolean(moving));
           players[Number(id)].updateAnimations();
-          players[Number(id)].setDepth(Number(y));
-          players[Number(id)].label.setDepth(Number(y));
-          players[Number(id)].label.setX(
-            Number(x) - players[Number(id)].label.width / 2
-          );
-          players[Number(id)].label.setY(Number(y) - 65);
         } else {
           if (!disconnected[Number(id)]) {
             const player = new Player({
               id: Number(id),
               scene: this,
-              x: Number(x),
-              y: Number(y),
+              x: 0,
+              y: 0,
               sprite: Number(sprite),
             });
 
+            player.label = this.add
+              .text(
+                player.x,
+                player.y - 80,
+                `Player ${id}`,
+                StyleConstants.TEXT_STYLE
+              )
+              .setOrigin(0.5, 0.5)
+              .setShadow(1, 1, "black")
+              .setAlpha(0.8);
+
+            player.messageContent = this.add
+              .text(
+                player.x,
+                player.y - 160,
+                `Player ${id}`,
+                StyleConstants.TEXT_STYLE
+              )
+              .setOrigin(0.5, 0.5)
+              .setShadow(1, 1, "black");
+
+            const gridSize = 64;
+            player.message = this.add.existing(
+              new NinePatch(
+                this,
+                0,
+                player.y - 160,
+                player.messageContent.width + 100,
+                100,
+                "bubble",
+                [gridSize, gridSize, gridSize, gridSize, gridSize],
+                [gridSize, gridSize, gridSize, gridSize, gridSize]
+              )
+            );
+
+            player.message.setAlpha(0);
+            player.messageContent.setAlpha(0);
+
+            player.container = this.add.container(Number(x), Number(y), [
+              player,
+              player.label,
+              player.message,
+              player.messageContent,
+            ]);
+
+            this.physics.world.enable(player.container);
             players[Number(id)] = player;
 
-            player.label = this.add
-              .bitmapText(
-                Number(x) - player.displayWidth / 2,
-                Number(y) - 65,
-                "arcade",
-                `Player ${id}`,
-                12
-              )
-              .setDepth(Number(y))
-              .setDropShadow(0, 2, 0x000000, 0.2);
-
+            this.physics.add.collider(players[Number(id)], this.collisionLayer);
             if (Number(id) === this.me) {
               this.cameras.main.setRoundPixels(true);
-              this.cameras.main.startFollow(player, true, 1, 1);
+              this.cameras.main.startFollow(player.container, true, 1, 1);
               this.cameras.main.setBounds(
                 0,
                 0,
