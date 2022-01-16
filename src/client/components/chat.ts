@@ -1,25 +1,37 @@
 import { Scene } from "phaser";
 import { Schema } from "@shared/protobuf";
+import NinePatch from "phaser3-rex-plugins/plugins/ninepatch.js";
 
 export class Chat extends Scene {
   schemaMessages: Schema.Message[];
   messages: Phaser.GameObjects.BitmapText;
-  chatbox: Phaser.GameObjects.Rectangle;
+  chatbox: NinePatch;
   messagePrompt: Phaser.GameObjects.BitmapText;
 
   constructor() {
     super({ key: "chat" });
   }
 
+  preload() {
+    this.load.image("base", "assets/gui/base4x.png");
+  }
+
   create() {
-    this.chatbox = this.add.rectangle(
-      600 / 2 + 16,
-      this.sys.game.canvas.height - 250 / 2 - 16,
-      600,
-      250,
-      0x000000
+    const gridSize = 64;
+    this.chatbox = this.add.existing(
+      new NinePatch(
+        this,
+        600 / 2 + 16,
+        this.sys.game.canvas.height - 250 / 2 - 16,
+        600,
+        250,
+        "base",
+        [gridSize, gridSize, gridSize],
+        [gridSize, gridSize, gridSize]
+      )
     );
-    this.chatbox.setAlpha(0.2);
+
+    this.chatbox.setAlpha(0.8);
     this.chatbox.setScrollFactor(0);
 
     this.messages = this.add

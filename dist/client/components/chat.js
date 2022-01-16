@@ -1,14 +1,22 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Chat = void 0;
 const phaser_1 = require("phaser");
+const ninepatch_js_1 = __importDefault(require("phaser3-rex-plugins/plugins/ninepatch.js"));
 class Chat extends phaser_1.Scene {
     constructor() {
         super({ key: "chat" });
     }
+    preload() {
+        this.load.image("base", "assets/gui/base4x.png");
+    }
     create() {
-        this.chatbox = this.add.rectangle(600 / 2 + 16, this.sys.game.canvas.height - 250 / 2 - 16, 600, 250, 0x000000);
-        this.chatbox.setAlpha(0.2);
+        const gridSize = 64;
+        this.chatbox = this.add.existing(new ninepatch_js_1.default(this, 600 / 2 + 16, this.sys.game.canvas.height - 250 / 2 - 16, 600, 250, "base", [gridSize, gridSize, gridSize], [gridSize, gridSize, gridSize]));
+        this.chatbox.setAlpha(0.8);
         this.chatbox.setScrollFactor(0);
         this.messages = this.add
             .bitmapText(32, this.sys.game.canvas.height - 250 - 16, "arcade", "", 12)

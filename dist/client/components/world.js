@@ -252,11 +252,18 @@ class World extends phaser_1.Scene {
                     chat.messagePrompt.setText("Press enter to type your message");
                 }
             }
-            else if ((this.sendingMessage && event.keyCode === 32) ||
+            else if (event.keyCode === 32 ||
                 (event.keyCode >= 48 && event.keyCode < 90) ||
                 event.keyCode === 190 ||
                 event.keyCode === 90) {
-                chat.messagePrompt.setText(chat.messagePrompt.text + event.key);
+                if (this.sendingMessage) {
+                    chat.messagePrompt.setText(chat.messagePrompt.text + event.key);
+                }
+            }
+            else if (event.keyCode === Phaser.Input.Keyboard.KeyCodes.BACKSPACE) {
+                if (this.sendingMessage) {
+                    chat.messagePrompt.setText(chat.messagePrompt.text.substring(0, chat.messagePrompt.text.length - 1));
+                }
             }
         });
     }

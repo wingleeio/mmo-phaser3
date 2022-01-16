@@ -25,6 +25,7 @@
     "google-protobuf": "^3.19.1",
     "module-alias": "^2.2.2",
     "phaser": "^3.55.2",
+    "phaser3-rex-plugins": "^1.1.65",
     "webfontloader": "^1.6.28",
     "ws": "^8.4.0"
   },
@@ -50,6 +51,6 @@
     "@shared": "dist/shared"
   },
   "engines": {
-    "node": "16.13.0"
+    "node": ">=16.3.0"
   }
 }
