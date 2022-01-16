@@ -72,7 +72,8 @@ export class Chat extends Scene {
     let newMessages = "";
 
     this.schemaMessages.forEach((m) => {
-      newMessages = newMessages + `\n[Player ${m.getId()}] ${m.getContent()}\n`;
+      newMessages =
+        newMessages + `\n[Player ${m.getId()}]: ${m.getContent()}\n`;
     });
 
     this.messages.setText(newMessages);

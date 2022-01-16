@@ -357,8 +357,7 @@ export class World extends Scene {
                 `Player ${id}`,
                 StyleConstants.TEXT_STYLE
               )
-              .setOrigin(0.5, 0.5)
-              .setShadow(1, 1, "black");
+              .setOrigin(0.5, 0.5);
 
             const gridSize = 64;
             player.message = this.add.existing(
@@ -375,7 +374,7 @@ export class World extends Scene {
             );
 
             player.message.setAlpha(0);
-            player.messageContent.setAlpha(0);
+            player.messageContent.setAlpha(0).setColor("black");
 
             player.container = this.add.container(Number(x), Number(y), [
               player,

@@ -3,5 +3,5 @@ export const StyleConstants = {
     fontFamily: "Dogica",
     fontSize: "12px",
     smoothed: false,
-  },
+  } as Phaser.Types.GameObjects.Text.TextStyle,
 };
