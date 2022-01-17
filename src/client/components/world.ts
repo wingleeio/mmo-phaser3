@@ -168,7 +168,7 @@ export class World extends Scene {
       .createLayer("collision", tilesets)
       .setScale(4, 4)
       .setAlpha(0)
-      .setCollisionByProperty({ collides: true });
+      .setCollisionByExclusion([-1]);
 
     this.physics.add.existing(
       this.add.zone(
@@ -264,6 +264,7 @@ export class World extends Scene {
 
     const moving = player.instance.getMoving().toObject();
     const speed = player.instance.getSpeed();
+
     if (moving.up) {
       player.setVelocityY(-speed);
       player.label.body.velocity.y = -speed;
@@ -397,15 +398,33 @@ export class World extends Scene {
             player.message.setAlpha(0);
             player.messageContent.setAlpha(0).setColor("black");
 
-            players[Number(id)] = player;
-
             this.physics.world.enable([
               player.label,
               player.message,
               player.messageContent,
             ]);
 
-            this.physics.add.collider(players[Number(id)], this.collisionLayer);
+            player.setSize(16, 16).setOffset(5, 20);
+
+            //@ts-ignore
+            player.label.body.setSize(64, 64).setOffset(18, 94);
+
+            //@ts-ignore
+            player.message.body.setSize(64, 64).setOffset(55, 218);
+
+            //@ts-ignore
+            player.messageContent.body.setSize(64, 64).setOffset(5, 178);
+
+            this.physics.add.collider(player, this.collisionLayer);
+            this.physics.add.collider(player.label, this.collisionLayer);
+            this.physics.add.collider(player.message, this.collisionLayer);
+            this.physics.add.collider(
+              player.messageContent,
+              this.collisionLayer
+            );
+
+            players[Number(id)] = player;
+
             if (Number(id) === this.me) {
               this.cameras.main.setRoundPixels(true);
               this.cameras.main.startFollow(player, true, 1, 1);

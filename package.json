@@ -7,7 +7,7 @@
   "scripts": {
     "clean": "rimraf dist/*",
     "tsc": "tsc",
-    "assets": "cp -R src/client/index.html src/client/assets dist/client",
+    "assets": "cp -R src/client/index.html src/client/assets dist/client && cp -R src/server/assets dist/server",
     "parcel": "parcel build src/client/index.ts -d dist/client",
     "build": "npm-run-all clean tsc assets parcel",
     "start": "node dist/server/index.js",

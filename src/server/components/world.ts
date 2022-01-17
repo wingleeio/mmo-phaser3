@@ -7,7 +7,7 @@ import { decodeBinary } from "@shared/utils/serialization";
 import { io } from "../core/server";
 import Web3 from "web3";
 import { PrismaClient } from "@prisma/client";
-
+import path from "path";
 let interval: number = 0;
 let tick: number = 0;
 
@@ -19,14 +19,47 @@ export class World extends Phaser.Scene {
   SI: SnapshotInterpolation;
   web3: Web3 = new Web3();
   prisma: PrismaClient;
+  map: Phaser.Tilemaps.Tilemap;
+  collisionLayer: Phaser.Tilemaps.TilemapLayer;
   constructor() {
     super({ key: "World" });
     this.SI = new SnapshotInterpolation();
     this.prisma = new PrismaClient();
   }
 
+  preload() {
+    this.load.tilemapTiledJSON(
+      "map",
+      path.join(__dirname, "../assets/tilemaps/World.json")
+    );
+    this.load.image(
+      "rules",
+      path.join(__dirname, "../assets/tilesets/rules.png")
+    );
+  }
+
   create() {
     io.on("connection", this.handleConnection);
+
+    this.map = this.make.tilemap({ key: "map" });
+
+    const rules = this.map.addTilesetImage("rules", "rules", 16, 16);
+    const tilesets = [rules];
+
+    this.collisionLayer = this.map
+      .createLayer("collision", tilesets)
+      .setScale(4, 4)
+      .setAlpha(0)
+      .setCollisionByExclusion([-1]);
+
+    this.physics.add.existing(
+      this.add.zone(
+        0,
+        0,
+        this.map.widthInPixels * 4,
+        this.map.heightInPixels * 4
+      )
+    );
   }
 
   handleConnection = (client: WebSocket) => {
@@ -203,6 +236,8 @@ export class World extends Phaser.Scene {
               sprite: user.sprite,
               name: user.name,
             });
+            players[id].setSize(16, 16).setOffset(5, 20);
+            this.physics.add.collider(players[id], this.collisionLayer);
 
             newPacket.setType(Schema.ServerPacketType.LOGIN_SUCCESS);
             newPacket.setId(id);
@@ -239,6 +274,8 @@ export class World extends Phaser.Scene {
             sprite: user.sprite,
             name: user.name,
           });
+          players[id].setSize(16, 16).setOffset(5, 20);
+          this.physics.add.collider(players[id], this.collisionLayer);
 
           newPacket.setType(Schema.ServerPacketType.LOGIN_SUCCESS);
           newPacket.setId(id);
