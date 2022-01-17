@@ -128,8 +128,11 @@ class World extends phaser_1.Scene {
                 const moving = player.instance.getMoving().toObject();
                 const isMoving = moving.left || moving.right || moving.up || moving.down;
                 const correction = isMoving ? 60 : 180;
-                player.container.x -= offsetX / correction;
-                player.container.y -= offsetY / correction;
+                player.x -= offsetX / correction;
+                player.y -= offsetY / correction;
+                player.label.setPosition(player.x, player.y - 80);
+                player.message.setPosition(player.x, player.y - 160);
+                player.messageContent.setPosition(player.x, player.y - 163);
             }
         };
         this.clientPrediction = () => {
@@ -139,39 +142,51 @@ class World extends phaser_1.Scene {
             const moving = player.instance.getMoving().toObject();
             const speed = player.instance.getSpeed();
             if (moving.up) {
-                // @ts-ignore
-                player.container.body.setVelocityY(-speed);
+                player.setVelocityY(-speed);
+                player.label.body.velocity.y = -speed;
+                player.message.body.velocity.y = -speed;
+                player.messageContent.body.velocity.y = -speed;
                 player.instance.setDirection(protobuf_1.Schema.Direction.UP);
             }
             if (moving.down) {
-                // @ts-ignore
-                player.container.body.setVelocityY(speed);
+                player.setVelocityY(speed);
+                player.label.body.velocity.y = speed;
+                player.message.body.velocity.y = speed;
+                player.messageContent.body.velocity.y = speed;
                 player.instance.setDirection(protobuf_1.Schema.Direction.DOWN);
             }
             if (moving.left) {
-                // @ts-ignore
-                player.container.body.setVelocityX(-speed);
+                player.setVelocityX(-speed);
+                player.label.body.velocity.x = -speed;
+                player.message.body.velocity.x = -speed;
+                player.messageContent.body.velocity.x = -speed;
                 player.instance.setDirection(protobuf_1.Schema.Direction.LEFT);
             }
             if (moving.right) {
-                // @ts-ignore
-                player.container.body.setVelocityX(speed);
+                player.setVelocityX(speed);
+                player.label.body.velocity.x = speed;
+                player.message.body.velocity.x = speed;
+                player.messageContent.body.velocity.x = speed;
                 player.instance.setDirection(protobuf_1.Schema.Direction.RIGHT);
             }
             if (!moving.up && !moving.down) {
-                // @ts-ignore
-                player.container.body.setVelocityY(0);
+                player.setVelocityY(0);
+                player.message.body.velocity.y = 0;
+                player.messageContent.body.velocity.y = 0;
+                player.label.body.velocity.y = 0;
             }
             if (!moving.left && !moving.right) {
-                // @ts-ignore
-                player.container.body.setVelocityX(0);
+                player.setVelocityX(0);
+                player.message.body.velocity.x = 0;
+                player.messageContent.body.velocity.x = 0;
+                player.label.body.velocity.x = 0;
             }
             player.updateAnimations();
             clientVault.add(SI.snapshot.create([
                 {
                     id: this.me.toString(),
-                    x: player.container.x,
-                    y: player.container.y,
+                    x: player.x,
+                    y: player.y,
                 },
             ]));
         };
@@ -187,10 +202,13 @@ class World extends phaser_1.Scene {
                     if (players[Number(id)]) {
                         if (this.me === Number(id))
                             return;
-                        players[Number(id)].container.x = Number(x);
-                        players[Number(id)].container.y = Number(y);
+                        players[Number(id)].x = Number(x);
+                        players[Number(id)].y = Number(y);
                         players[Number(id)].instance.setDirection(direction);
                         players[Number(id)].instance.getMoving().setDown(Boolean(moving));
+                        players[Number(id)].label.setPosition(Number(x), Number(y) - 80);
+                        players[Number(id)].message.setPosition(Number(x), Number(y) - 163);
+                        players[Number(id)].messageContent.setPosition(Number(x), Number(y) - 160);
                         players[Number(id)].updateAnimations();
                     }
                     else {
@@ -198,33 +216,35 @@ class World extends phaser_1.Scene {
                             const player = new player_1.Player({
                                 id: Number(id),
                                 scene: this,
-                                x: 0,
-                                y: 0,
+                                x: Number(x),
+                                y: Number(y),
                                 sprite: Number(sprite),
                             });
                             player.label = this.add
-                                .text(player.x, player.y - 80, `Player ${id}`, constants_1.StyleConstants.TEXT_STYLE)
+                                .text(Number(x), Number(y) - 80, `Player ${id}`, constants_1.StyleConstants.TEXT_STYLE)
                                 .setOrigin(0.5, 0.5)
                                 .setShadow(1, 1, "black")
-                                .setAlpha(0.8);
+                                .setAlpha(0.8)
+                                .setDepth(3);
                             player.messageContent = this.add
-                                .text(player.x, player.y - 160, `Player ${id}`, constants_1.StyleConstants.TEXT_STYLE)
-                                .setOrigin(0.5, 0.5);
-                            player.message = this.add.existing(new ui_components_1.NinePatch(this, 0, player.y - 160, player.messageContent.width + 100, 100, "bubble", [36, 36, 48, 36, 36], [36, 36, 48, 36, 36]));
+                                .text(Number(x), Number(y) - 163, `Player ${id}`, constants_1.StyleConstants.TEXT_STYLE)
+                                .setOrigin(0.5, 0.5)
+                                .setDepth(4);
+                            player.message = this.add
+                                .existing(new ui_components_1.NinePatch(this, Number(x), Number(y) - 160, player.messageContent.width + 100, 100, "bubble", [36, 36, 48, 36, 36], [36, 36, 48, 36, 36]))
+                                .setDepth(3);
                             player.message.setAlpha(0);
                             player.messageContent.setAlpha(0).setColor("black");
-                            player.container = this.add.container(Number(x), Number(y), [
-                                player,
+                            players[Number(id)] = player;
+                            this.physics.world.enable([
                                 player.label,
                                 player.message,
                                 player.messageContent,
                             ]);
-                            this.physics.world.enable(player.container);
-                            players[Number(id)] = player;
                             this.physics.add.collider(players[Number(id)], this.collisionLayer);
                             if (Number(id) === this.me) {
                                 this.cameras.main.setRoundPixels(true);
-                                this.cameras.main.startFollow(player.container, true, 1, 1);
+                                this.cameras.main.startFollow(player, true, 1, 1);
                                 this.cameras.main.setBounds(0, 0, this.map.widthInPixels * 4, this.map.heightInPixels * 4);
                             }
                         }
@@ -300,10 +320,7 @@ class World extends phaser_1.Scene {
         this.map.createLayer("ground_decor", tilesets).setScale(4, 4);
         this.map.createLayer("ground_decor_2", tilesets).setScale(4, 4);
         this.map.createLayer("objects", tilesets).setScale(4, 4);
-        this.map
-            .createLayer("objects_upper", tilesets)
-            .setScale(4, 4)
-            .setDepth(10000000);
+        this.map.createLayer("objects_upper", tilesets).setScale(4, 4).setDepth(1);
         this.collisionLayer = this.map
             .createLayer("collision", tilesets)
             .setScale(4, 4)
