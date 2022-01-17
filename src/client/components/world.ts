@@ -11,6 +11,7 @@ import { Schema } from "@shared/protobuf";
 import { decodeBinary } from "@shared/utils/serialization";
 import { StyleConstants } from "../utls/constants";
 import { NinePatch } from "phaser3-rex-plugins/templates/ui/ui-components";
+import { server } from "../utls/server";
 
 const players: { [key: number]: Player } = {};
 const disconnected: any = {};
@@ -27,10 +28,13 @@ export class World extends Scene {
 
   constructor() {
     super({ key: "World" });
-    this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
-    // this.server = new WebSocket("ws://localhost:3000/ws");
+    this.server = server;
     this.initConnection();
   }
+
+  init = ({ id }: { id: number }) => {
+    this.me = id;
+  };
 
   preload() {
     this.load.image("bubble", "assets/gui/bubble4x.png");
@@ -39,13 +43,6 @@ export class World extends Scene {
     this.load.image("outside", "assets/tilesets/outside.png");
     this.load.image("water", "assets/tilesets/water.png");
     this.load.tilemapTiledJSON("map", "assets/tilemaps/World.json");
-
-    for (let i = 1; i <= 8; i++) {
-      this.load.spritesheet(`${i}`, `assets/sprites/${i}.png`, {
-        frameWidth: 26,
-        frameHeight: 36,
-      });
-    }
   }
 
   create() {
@@ -215,7 +212,7 @@ export class World extends Scene {
       case Schema.ServerPacketType.BROADCAST_MESSAGE:
         const chat: Chat = this.scene.get("chat") as any;
         const player = players[packet.getMessage().getId()];
-        chat.addMessage(packet.getMessage());
+        chat.addMessage(player, packet.getMessage());
         player.sentMessage(packet.getMessage().getContent());
         break;
       case Schema.ServerPacketType.PLAYER_DISCONNECTED:
@@ -334,7 +331,7 @@ export class World extends Scene {
     if (snapshot) {
       const { state } = snapshot;
       state.forEach((s) => {
-        const { id, x, y, direction, moving, sprite } = s;
+        const { id, x, y, direction, moving, sprite, name } = s;
         if (players[Number(id)]) {
           if (this.me === Number(id)) return;
           players[Number(id)].x = Number(x);
@@ -356,13 +353,14 @@ export class World extends Scene {
               x: Number(x),
               y: Number(y),
               sprite: Number(sprite),
+              name: name as string,
             });
 
             player.label = this.add
               .text(
                 Number(x),
                 Number(y) - 80,
-                `Player ${id}`,
+                name as string,
                 StyleConstants.TEXT_STYLE
               )
               .setOrigin(0.5, 0.5)

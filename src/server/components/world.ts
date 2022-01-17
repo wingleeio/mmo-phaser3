@@ -5,19 +5,24 @@ import { Schema } from "@shared/protobuf";
 import { SnapshotInterpolation } from "@geckos.io/snapshot-interpolation";
 import { decodeBinary } from "@shared/utils/serialization";
 import { io } from "../core/server";
+import Web3 from "web3";
+import { PrismaClient } from "@prisma/client";
 
 let interval: number = 0;
 let tick: number = 0;
 
 const clients: { [key: number]: WebSocket } = {};
 const players: { [key: number]: Player } = {};
+const addresses: { [key: number]: string } = {};
 
 export class World extends Phaser.Scene {
   SI: SnapshotInterpolation;
-
+  web3: Web3 = new Web3();
+  prisma: PrismaClient;
   constructor() {
     super({ key: "World" });
     this.SI = new SnapshotInterpolation();
+    this.prisma = new PrismaClient();
   }
 
   create() {
@@ -28,15 +33,6 @@ export class World extends Phaser.Scene {
     const id = interval;
 
     clients[id] = client;
-
-    players[id] = new Player({
-      id,
-      scene: this,
-      x: 3089,
-      y: 1984,
-      texture: "player",
-      sprite: Math.floor(Math.random() * 7) + 1,
-    });
 
     console.log(`Client ${id} connected`);
 
@@ -120,6 +116,7 @@ export class World extends Phaser.Scene {
           player.instance.getMoving().getLeft() ||
           player.instance.getMoving().getRight()
       );
+      position.setName(player.instance.getName());
       packet.getSnapshot().addState(position);
     }
 
@@ -131,17 +128,123 @@ export class World extends Phaser.Scene {
       e.data,
       Schema.ClientPacket
     );
+    const newPacket = new Schema.ServerPacket();
 
     switch (packet.getType()) {
       case Schema.ClientPacketType.MOVEMENT_INPUT:
         this.handleMovementInput(id, packet);
         break;
       case Schema.ClientPacketType.SEND_MESSAGE:
-        const newPacket = new Schema.ServerPacket();
         newPacket.setType(Schema.ServerPacketType.BROADCAST_MESSAGE);
         newPacket.setMessage(packet.getMessage());
         newPacket.getMessage().setId(id);
         this.broadcast(newPacket.serializeBinary());
+        break;
+      case Schema.ClientPacketType.NONCE:
+        const address = packet.getAddress();
+        const isAddress = this.web3.utils.isAddress(address);
+
+        if (!isAddress) return;
+
+        let user = await this.prisma.user.findFirst({
+          where: { id: address },
+        });
+
+        if (!user) {
+          user = await this.prisma.user.create({
+            data: {
+              id: address,
+              nonce: Math.floor(Math.random() * 1000000000),
+            },
+          });
+        } else {
+          user = await this.prisma.user.update({
+            where: {
+              id: address,
+            },
+            data: {
+              nonce: Math.floor(Math.random() * 1000000000),
+            },
+          });
+        }
+        newPacket.setType(Schema.ServerPacketType.SERVER_NONCE);
+        newPacket.setNonce(user.nonce);
+
+        clients[id].send(newPacket.serializeBinary());
+        break;
+      case Schema.ClientPacketType.LOGIN:
+        const handleLogin = async () => {
+          const address = packet.getLogin().getAddress();
+          const signature = packet.getLogin().getSignature();
+
+          let user = await this.prisma.user.findFirst({
+            where: { id: address },
+          });
+
+          if (!user) return;
+          const signer = this.web3.eth.accounts.recover(
+            `Logging into Legends of Ethereum with my one-time nonce: ${user.nonce}`,
+            signature
+          );
+
+          if (signer !== address) return;
+          addresses[id] = signer;
+
+          if (!user.sprite || !user.name) {
+            newPacket.setType(Schema.ServerPacketType.MISSING_DETAILS);
+            clients[id].send(newPacket.serializeBinary());
+          } else {
+            players[id] = new Player({
+              id,
+              scene: this,
+              x: user.x,
+              y: user.y,
+              texture: "player",
+              sprite: user.sprite,
+              name: user.name,
+            });
+
+            newPacket.setType(Schema.ServerPacketType.LOGIN_SUCCESS);
+            newPacket.setId(id);
+            clients[id].send(newPacket.serializeBinary());
+          }
+        };
+
+        await handleLogin();
+        break;
+      case Schema.ClientPacketType.UPDATE_ACCOUNT:
+        const handleUpdate = async () => {
+          const sprite = packet.getUpdate().getSprite();
+          const name = packet.getUpdate().getName();
+
+          let user = await this.prisma.user.findFirst({ where: { name } });
+
+          if (user) return;
+
+          user = await this.prisma.user.update({
+            where: {
+              id: addresses[id],
+            },
+            data: {
+              sprite,
+              name,
+            },
+          });
+          players[id] = new Player({
+            id,
+            scene: this,
+            x: user.x,
+            y: user.y,
+            texture: "player",
+            sprite: user.sprite,
+            name: user.name,
+          });
+
+          newPacket.setType(Schema.ServerPacketType.LOGIN_SUCCESS);
+          newPacket.setId(id);
+          clients[id].send(newPacket.serializeBinary());
+        };
+        await handleUpdate();
         break;
       default:
         break;

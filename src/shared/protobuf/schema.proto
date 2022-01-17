@@ -41,6 +41,7 @@ message Position {
     Direction direction = 4;
     bool moving = 5;
     int32 sprite = 6;
+    string name = 7;
 }
 
 message Snapshot {
@@ -54,9 +55,22 @@ message Message {
     string content = 2;
 }
 
+message Login {
+    string address = 1;
+    string signature = 2;
+}
+
+message UpdateAccount {
+    string name = 1;
+    int32 sprite = 2;
+}
+
 enum ClientPacketType {
     MOVEMENT_INPUT = 0;
     SEND_MESSAGE = 1;
+    LOGIN = 2;
+    NONCE = 3;
+    UPDATE_ACCOUNT = 4;
 }
 
 enum ServerPacketType {
@@ -64,6 +78,9 @@ enum ServerPacketType {
     PLAYER_DISCONNECTED = 1;
     INITIALIZE = 2;
     BROADCAST_MESSAGE = 3;
+    SERVER_NONCE = 4;
+    MISSING_DETAILS = 5;
+    LOGIN_SUCCESS = 6;
 }
 
 message ClientPacket {
@@ -72,6 +89,9 @@ message ClientPacket {
     oneof data {
         MovementInput movementInput = 3;
         Message message = 4;
+        Login login = 5;
+        string address = 6;
+        UpdateAccount update = 7;
     }
 }
 
@@ -83,6 +103,7 @@ message ServerPacket {
         int32 id = 4;
         Snapshot snapshot = 5;
         Message message = 6;
+        int32 nonce = 7;
     }
 }
 

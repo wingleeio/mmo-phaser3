@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.World = void 0;
 const schema_pb_1 = require("@shared/protobuf/schema_pb");
@@ -16,24 +19,20 @@ const protobuf_1 = require("@shared/protobuf");
 const snapshot_interpolation_1 = require("@geckos.io/snapshot-interpolation");
 const serialization_1 = require("@shared/utils/serialization");
 const server_1 = require("../core/server");
+const web3_1 = __importDefault(require("web3"));
+const client_1 = require("@prisma/client");
 let interval = 0;
 let tick = 0;
 const clients = {};
 const players = {};
+const addresses = {};
 class World extends Phaser.Scene {
     constructor() {
         super({ key: "World" });
+        this.web3 = new web3_1.default();
         this.handleConnection = (client) => {
             const id = interval;
             clients[id] = client;
-            players[id] = new player_1.Player({
-                id,
-                scene: this,
-                x: 3089,
-                y: 1984,
-                texture: "player",
-                sprite: Math.floor(Math.random() * 7) + 1,
-            });
             console.log(`Client ${id} connected`);
             const packet = new protobuf_1.Schema.ServerPacket();
             packet.setType(protobuf_1.Schema.ServerPacketType.INITIALIZE);
@@ -44,6 +43,7 @@ class World extends Phaser.Scene {
             interval++;
         };
         this.SI = new snapshot_interpolation_1.SnapshotInterpolation();
+        this.prisma = new client_1.PrismaClient();
     }
     create() {
         server_1.io.on("connection", this.handleConnection);
@@ -98,6 +98,7 @@ class World extends Phaser.Scene {
                 player.instance.getMoving().getDown() ||
                 player.instance.getMoving().getLeft() ||
                 player.instance.getMoving().getRight());
+            position.setName(player.instance.getName());
             packet.getSnapshot().addState(position);
         }
         this.broadcast(packet.serializeBinary());
@@ -105,16 +106,111 @@ class World extends Phaser.Scene {
     handleMessage(id, e) {
         return __awaiter(this, void 0, void 0, function* () {
             const packet = yield (0, serialization_1.decodeBinary)(e.data, protobuf_1.Schema.ClientPacket);
+            const newPacket = new protobuf_1.Schema.ServerPacket();
             switch (packet.getType()) {
                 case protobuf_1.Schema.ClientPacketType.MOVEMENT_INPUT:
                     this.handleMovementInput(id, packet);
                     break;
                 case protobuf_1.Schema.ClientPacketType.SEND_MESSAGE:
-                    const newPacket = new protobuf_1.Schema.ServerPacket();
                     newPacket.setType(protobuf_1.Schema.ServerPacketType.BROADCAST_MESSAGE);
                     newPacket.setMessage(packet.getMessage());
                     newPacket.getMessage().setId(id);
                     this.broadcast(newPacket.serializeBinary());
+                    break;
+                case protobuf_1.Schema.ClientPacketType.NONCE:
+                    const address = packet.getAddress();
+                    const isAddress = this.web3.utils.isAddress(address);
+                    if (!isAddress)
+                        return;
+                    let user = yield this.prisma.user.findFirst({
+                        where: { id: address },
+                    });
+                    if (!user) {
+                        user = yield this.prisma.user.create({
+                            data: {
+                                id: address,
+                                nonce: Math.floor(Math.random() * 1000000000),
+                            },
+                        });
+                    }
+                    else {
+                        user = yield this.prisma.user.update({
+                            where: {
+                                id: address,
+                            },
+                            data: {
+                                nonce: Math.floor(Math.random() * 1000000000),
+                            },
+                        });
+                    }
+                    newPacket.setType(protobuf_1.Schema.ServerPacketType.SERVER_NONCE);
+                    newPacket.setNonce(user.nonce);
+                    clients[id].send(newPacket.serializeBinary());
+                    break;
+                case protobuf_1.Schema.ClientPacketType.LOGIN:
+                    const handleLogin = () => __awaiter(this, void 0, void 0, function* () {
+                        const address = packet.getLogin().getAddress();
+                        const signature = packet.getLogin().getSignature();
+                        let user = yield this.prisma.user.findFirst({
+                            where: { id: address },
+                        });
+                        if (!user)
+                            return;
+                        const signer = this.web3.eth.accounts.recover(`Logging into Legends of Ethereum with my one-time nonce: ${user.nonce}`, signature);
+                        if (signer !== address)
+                            return;
+                        addresses[id] = signer;
+                        if (!user.sprite || !user.name) {
+                            newPacket.setType(protobuf_1.Schema.ServerPacketType.MISSING_DETAILS);
+                            clients[id].send(newPacket.serializeBinary());
+                        }
+                        else {
+                            players[id] = new player_1.Player({
+                                id,
+                                scene: this,
+                                x: user.x,
+                                y: user.y,
+                                texture: "player",
+                                sprite: user.sprite,
+                                name: user.name,
+                            });
+                            newPacket.setType(protobuf_1.Schema.ServerPacketType.LOGIN_SUCCESS);
+                            newPacket.setId(id);
+                            clients[id].send(newPacket.serializeBinary());
+                        }
+                    });
+                    yield handleLogin();
+                    break;
+                case protobuf_1.Schema.ClientPacketType.UPDATE_ACCOUNT:
+                    const handleUpdate = () => __awaiter(this, void 0, void 0, function* () {
+                        const sprite = packet.getUpdate().getSprite();
+                        const name = packet.getUpdate().getName();
+                        let user = yield this.prisma.user.findFirst({ where: { name } });
+                        if (user)
+                            return;
+                        user = yield this.prisma.user.update({
+                            where: {
+                                id: addresses[id],
+                            },
+                            data: {
+                                sprite,
+                                name,
+                            },
+                        });
+                        players[id] = new player_1.Player({
+                            id,
+                            scene: this,
+                            x: user.x,
+                            y: user.y,
+                            texture: "player",
+                            sprite: user.sprite,
+                            name: user.name,
+                        });
+                        newPacket.setType(protobuf_1.Schema.ServerPacketType.LOGIN_SUCCESS);
+                        newPacket.setId(id);
+                        clients[id].send(newPacket.serializeBinary());
+                    });
+                    yield handleUpdate();
                     break;
                 default:
                     break;

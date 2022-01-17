@@ -34,7 +34,7 @@ class Chat extends phaser_1.Scene {
         });
         this.schemaMessages = [];
     }
-    addMessage(message) {
+    addMessage(player, message) {
         this.schemaMessages.push(message);
         if (this.schemaMessages.length > 7) {
             this.schemaMessages.shift();
@@ -42,7 +42,7 @@ class Chat extends phaser_1.Scene {
         let newMessages = "";
         this.schemaMessages.forEach((m) => {
             newMessages =
-                newMessages + `\n[Player ${m.getId()}]: ${m.getContent()}\n`;
+                newMessages + `\n[${player.instance.getName()}]: ${m.getContent()}\n`;
         });
         this.messages.setText(newMessages);
     }

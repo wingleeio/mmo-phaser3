@@ -2,6 +2,7 @@ import { Chat } from "./components/chat";
 import Phaser from "phaser";
 import { World } from "./components/world";
 import WebFont from "webfontloader";
+import { Login } from "./components/login";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -12,7 +13,7 @@ const config: Phaser.Types.Core.GameConfig = {
     height: "100%",
   },
   parent: "game",
-  scene: [World, Chat],
+  scene: [Login, World, Chat],
   render: {
     antialias: false,
     pixelArt: true,
@@ -23,6 +24,9 @@ const config: Phaser.Types.Core.GameConfig = {
     arcade: {
       fixedStep: false,
     },
+  },
+  dom: {
+    createContainer: true,
   },
 };
 

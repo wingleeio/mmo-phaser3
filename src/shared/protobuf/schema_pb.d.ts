@@ -147,6 +147,9 @@ export class Position extends jspb.Message {
   getSprite(): number;
   setSprite(value: number): void;
 
+  getName(): string;
+  setName(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Position.AsObject;
   static toObject(includeInstance: boolean, msg: Position): Position.AsObject;
@@ -165,6 +168,7 @@ export namespace Position {
     direction: DirectionMap[keyof DirectionMap],
     moving: boolean,
     sprite: number,
+    name: string,
   }
 }
 
@@ -226,6 +230,54 @@ export namespace Message {
   }
 }
 
+export class Login extends jspb.Message {
+  getAddress(): string;
+  setAddress(value: string): void;
+
+  getSignature(): string;
+  setSignature(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Login.AsObject;
+  static toObject(includeInstance: boolean, msg: Login): Login.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Login, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Login;
+  static deserializeBinaryFromReader(message: Login, reader: jspb.BinaryReader): Login;
+}
+
+export namespace Login {
+  export type AsObject = {
+    address: string,
+    signature: string,
+  }
+}
+
+export class UpdateAccount extends jspb.Message {
+  getName(): string;
+  setName(value: string): void;
+
+  getSprite(): number;
+  setSprite(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateAccount.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateAccount): UpdateAccount.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: UpdateAccount, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateAccount;
+  static deserializeBinaryFromReader(message: UpdateAccount, reader: jspb.BinaryReader): UpdateAccount;
+}
+
+export namespace UpdateAccount {
+  export type AsObject = {
+    name: string,
+    sprite: number,
+  }
+}
+
 export class ClientPacket extends jspb.Message {
   getType(): ClientPacketTypeMap[keyof ClientPacketTypeMap];
   setType(value: ClientPacketTypeMap[keyof ClientPacketTypeMap]): void;
@@ -239,6 +291,21 @@ export class ClientPacket extends jspb.Message {
   clearMessage(): void;
   getMessage(): Message | undefined;
   setMessage(value?: Message): void;
+
+  hasLogin(): boolean;
+  clearLogin(): void;
+  getLogin(): Login | undefined;
+  setLogin(value?: Login): void;
+
+  hasAddress(): boolean;
+  clearAddress(): void;
+  getAddress(): string;
+  setAddress(value: string): void;
+
+  hasUpdate(): boolean;
+  clearUpdate(): void;
+  getUpdate(): UpdateAccount | undefined;
+  setUpdate(value?: UpdateAccount): void;
 
   getDataCase(): ClientPacket.DataCase;
   serializeBinary(): Uint8Array;
@@ -256,12 +323,18 @@ export namespace ClientPacket {
     type: ClientPacketTypeMap[keyof ClientPacketTypeMap],
     movementinput?: MovementInput.AsObject,
     message?: Message.AsObject,
+    login?: Login.AsObject,
+    address: string,
+    update?: UpdateAccount.AsObject,
   }
 
   export enum DataCase {
     DATA_NOT_SET = 0,
     MOVEMENTINPUT = 3,
     MESSAGE = 4,
+    LOGIN = 5,
+    ADDRESS = 6,
+    UPDATE = 7,
   }
 }
 
@@ -289,6 +362,11 @@ export class ServerPacket extends jspb.Message {
   getMessage(): Message | undefined;
   setMessage(value?: Message): void;
 
+  hasNonce(): boolean;
+  clearNonce(): void;
+  getNonce(): number;
+  setNonce(value: number): void;
+
   getDataCase(): ServerPacket.DataCase;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ServerPacket.AsObject;
@@ -307,6 +385,7 @@ export namespace ServerPacket {
     id: number,
     snapshot?: Snapshot.AsObject,
     message?: Message.AsObject,
+    nonce: number,
   }
 
   export enum DataCase {
@@ -315,6 +394,7 @@ export namespace ServerPacket {
     ID = 4,
     SNAPSHOT = 5,
     MESSAGE = 6,
+    NONCE = 7,
   }
 }
 
@@ -330,6 +410,9 @@ export const Direction: DirectionMap;
 export interface ClientPacketTypeMap {
   MOVEMENT_INPUT: 0;
   SEND_MESSAGE: 1;
+  LOGIN: 2;
+  NONCE: 3;
+  UPDATE_ACCOUNT: 4;
 }
 
 export const ClientPacketType: ClientPacketTypeMap;
@@ -339,6 +422,9 @@ export interface ServerPacketTypeMap {
   PLAYER_DISCONNECTED: 1;
   INITIALIZE: 2;
   BROADCAST_MESSAGE: 3;
+  SERVER_NONCE: 4;
+  MISSING_DETAILS: 5;
+  LOGIN_SUCCESS: 6;
 }
 
 export const ServerPacketType: ServerPacketTypeMap;

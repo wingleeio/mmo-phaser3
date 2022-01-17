@@ -17,6 +17,7 @@ const protobuf_1 = require("@shared/protobuf");
 const serialization_1 = require("@shared/utils/serialization");
 const constants_1 = require("../utls/constants");
 const ui_components_1 = require("phaser3-rex-plugins/templates/ui/ui-components");
+const server_1 = require("../utls/server");
 const players = {};
 const disconnected = {};
 const SI = new snapshot_interpolation_1.SnapshotInterpolation(15);
@@ -24,6 +25,9 @@ const clientVault = new snapshot_interpolation_1.Vault();
 class World extends phaser_1.Scene {
     constructor() {
         super({ key: "World" });
+        this.init = ({ id }) => {
+            this.me = id;
+        };
         this.sendMessage = (message) => {
             const packet = new protobuf_1.Schema.ClientPacket();
             packet.setType(protobuf_1.Schema.ClientPacketType.SEND_MESSAGE);
@@ -102,7 +106,7 @@ class World extends phaser_1.Scene {
                 case protobuf_1.Schema.ServerPacketType.BROADCAST_MESSAGE:
                     const chat = this.scene.get("chat");
                     const player = players[packet.getMessage().getId()];
-                    chat.addMessage(packet.getMessage());
+                    chat.addMessage(player, packet.getMessage());
                     player.sentMessage(packet.getMessage().getContent());
                     break;
                 case protobuf_1.Schema.ServerPacketType.PLAYER_DISCONNECTED:
@@ -198,7 +202,7 @@ class World extends phaser_1.Scene {
             if (snapshot) {
                 const { state } = snapshot;
                 state.forEach((s) => {
-                    const { id, x, y, direction, moving, sprite } = s;
+                    const { id, x, y, direction, moving, sprite, name } = s;
                     if (players[Number(id)]) {
                         if (this.me === Number(id))
                             return;
@@ -219,9 +223,10 @@ class World extends phaser_1.Scene {
                                 x: Number(x),
                                 y: Number(y),
                                 sprite: Number(sprite),
+                                name: name,
                             });
                             player.label = this.add
-                                .text(Number(x), Number(y) - 80, `Player ${id}`, constants_1.StyleConstants.TEXT_STYLE)
+                                .text(Number(x), Number(y) - 80, name, constants_1.StyleConstants.TEXT_STYLE)
                                 .setOrigin(0.5, 0.5)
                                 .setShadow(1, 1, "black")
                                 .setAlpha(0.8)
@@ -252,8 +257,7 @@ class World extends phaser_1.Scene {
                 });
             }
         };
-        this.server = new WebSocket("wss://mmo-phaser3.herokuapp.com/ws");
-        // this.server = new WebSocket("ws://localhost:3000/ws");
+        this.server = server_1.server;
         this.initConnection();
     }
     preload() {
@@ -263,12 +267,6 @@ class World extends phaser_1.Scene {
         this.load.image("outside", "assets/tilesets/outside.png");
         this.load.image("water", "assets/tilesets/water.png");
         this.load.tilemapTiledJSON("map", "assets/tilemaps/World.json");
-        for (let i = 1; i <= 8; i++) {
-            this.load.spritesheet(`${i}`, `assets/sprites/${i}.png`, {
-                frameWidth: 26,
-                frameHeight: 36,
-            });
-        }
     }
     create() {
         this.initMap();

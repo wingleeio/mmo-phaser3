@@ -72,7 +72,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                     break;
             }
         };
-        const { id, x, y, sprite } = config;
+        const { id, x, y, sprite, name } = config;
         this.instance = new protobuf_1.Schema.Player();
         this.instance.setId(id);
         this.instance.setX(x);
@@ -81,6 +81,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.instance.setMoving(new protobuf_1.Schema.Movement());
         this.instance.setSpeed(150);
         this.instance.setSprite(sprite);
+        this.instance.setName(name);
         this.setScale(4, 4);
         this.init();
     }

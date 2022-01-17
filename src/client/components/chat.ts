@@ -2,6 +2,7 @@ import { Scene } from "phaser";
 import { Schema } from "@shared/protobuf";
 import NinePatch from "phaser3-rex-plugins/plugins/ninepatch.js";
 import { StyleConstants } from "../utls/constants";
+import { Player } from "./player";
 
 export class Chat extends Scene {
   schemaMessages: Schema.Message[];
@@ -64,7 +65,7 @@ export class Chat extends Scene {
     this.schemaMessages = [];
   }
 
-  addMessage(message: Schema.Message) {
+  addMessage(player: Player, message: Schema.Message) {
     this.schemaMessages.push(message);
     if (this.schemaMessages.length > 7) {
       this.schemaMessages.shift();
@@ -73,7 +74,7 @@ export class Chat extends Scene {
 
     this.schemaMessages.forEach((m) => {
       newMessages =
-        newMessages + `\n[Player ${m.getId()}]: ${m.getContent()}\n`;
+        newMessages + `\n[${player.instance.getName()}]: ${m.getContent()}\n`;
     });
 
     this.messages.setText(newMessages);
