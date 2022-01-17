@@ -22,7 +22,7 @@ export class Login extends Scene {
   }
 
   preload = () => {
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 32; i++) {
       this.load.spritesheet(`${i}`, `assets/sprites/${i}.png`, {
         frameWidth: 26,
         frameHeight: 36,
