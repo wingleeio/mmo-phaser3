@@ -220,8 +220,8 @@ export class World extends Phaser.Scene {
             signature
           );
 
-          if (signer !== address) return;
-          addresses[id] = signer;
+          if (signer !== this.web3.utils.toChecksumAddress(address)) return;
+          addresses[id] = address;
 
           if (!user.sprite || !user.name) {
             newPacket.setType(Schema.ServerPacketType.MISSING_DETAILS);
