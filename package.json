@@ -9,10 +9,11 @@
     "tsc": "tsc",
     "assets": "cp -R src/client/index.html src/client/assets dist/client",
     "parcel": "parcel build src/client/index.ts -d dist/client",
-    "build": "npm-run-all clean tsc assets parcel",
+    "build": "npm-run-all clean tsc assets parcel update:db",
     "start": "node dist/server/index.js",
     "dev": "nodemon --watch src -e ts --exec npm-run-all build start",
-    "proto:generate": "protoc --plugin=\"protoc-gen-ts=./node_modules/.bin/protoc-gen-ts\" -I=./src/shared/protobuf --ts_out=\"./src/shared/protobuf\" --js_out=\"import_style=commonjs,binary:./src/shared/protobuf\" ./src/shared/protobuf/schema.proto"
+    "proto:generate": "protoc --plugin=\"protoc-gen-ts=./node_modules/.bin/protoc-gen-ts\" -I=./src/shared/protobuf --ts_out=\"./src/shared/protobuf\" --js_out=\"import_style=commonjs,binary:./src/shared/protobuf\" ./src/shared/protobuf/schema.proto",
+    "update:db": "prisma generate"
   },
   "dependencies": {
     "@geckos.io/phaser-on-nodejs": "^1.2.7",
