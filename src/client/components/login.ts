@@ -22,7 +22,7 @@ export class Login extends Scene {
   }
 
   preload = () => {
-    for (let i = 1; i <= 32; i++) {
+    for (let i = 1; i <= 56; i++) {
       this.load.spritesheet(`${i}`, `assets/sprites/${i}.png`, {
         frameWidth: 26,
         frameHeight: 36,
@@ -146,7 +146,7 @@ export class Login extends Scene {
       screenCenterY + 100,
       "next",
       () => {
-        if (sprite < 32) {
+        if (sprite < 56) {
           sprite++;
           displaySprite.setTexture(sprite.toString()).setFrame(1);
         }
