@@ -106,6 +106,7 @@ class World extends phaser_1.Scene {
                 case protobuf_1.Schema.ServerPacketType.BROADCAST_MESSAGE:
                     const chat = this.scene.get("chat");
                     const player = players[packet.getMessage().getId()];
+                    packet.getMessage().setName(player.instance.getName());
                     chat.addMessage(player, packet.getMessage());
                     player.sentMessage(packet.getMessage().getContent());
                     break;
@@ -211,8 +212,8 @@ class World extends phaser_1.Scene {
                         players[Number(id)].instance.setDirection(direction);
                         players[Number(id)].instance.getMoving().setDown(Boolean(moving));
                         players[Number(id)].label.setPosition(Number(x), Number(y) - 80);
-                        players[Number(id)].message.setPosition(Number(x), Number(y) - 163);
-                        players[Number(id)].messageContent.setPosition(Number(x), Number(y) - 160);
+                        players[Number(id)].message.setPosition(Number(x), Number(y) - 160);
+                        players[Number(id)].messageContent.setPosition(Number(x), Number(y) - 163);
                         players[Number(id)].updateAnimations();
                     }
                     else {

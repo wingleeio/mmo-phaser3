@@ -41,8 +41,7 @@ class Chat extends phaser_1.Scene {
         }
         let newMessages = "";
         this.schemaMessages.forEach((m) => {
-            newMessages =
-                newMessages + `\n[${player.instance.getName()}]: ${m.getContent()}\n`;
+            newMessages = newMessages + `\n[${m.getName()}]: ${m.getContent()}\n`;
         });
         this.messages.setText(newMessages);
     }

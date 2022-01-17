@@ -212,6 +212,7 @@ export class World extends Scene {
       case Schema.ServerPacketType.BROADCAST_MESSAGE:
         const chat: Chat = this.scene.get("chat") as any;
         const player = players[packet.getMessage().getId()];
+        packet.getMessage().setName(player.instance.getName());
         chat.addMessage(player, packet.getMessage());
         player.sentMessage(packet.getMessage().getContent());
         break;
@@ -339,10 +340,10 @@ export class World extends Scene {
           players[Number(id)].instance.setDirection(direction as any);
           players[Number(id)].instance.getMoving().setDown(Boolean(moving));
           players[Number(id)].label.setPosition(Number(x), Number(y) - 80);
-          players[Number(id)].message.setPosition(Number(x), Number(y) - 163);
+          players[Number(id)].message.setPosition(Number(x), Number(y) - 160);
           players[Number(id)].messageContent.setPosition(
             Number(x),
-            Number(y) - 160
+            Number(y) - 163
           );
           players[Number(id)].updateAnimations();
         } else {

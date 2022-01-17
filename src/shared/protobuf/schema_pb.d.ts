@@ -213,6 +213,11 @@ export class Message extends jspb.Message {
   getContent(): string;
   setContent(value: string): void;
 
+  hasName(): boolean;
+  clearName(): void;
+  getName(): string;
+  setName(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Message.AsObject;
   static toObject(includeInstance: boolean, msg: Message): Message.AsObject;
@@ -227,6 +232,7 @@ export namespace Message {
   export type AsObject = {
     id: number,
     content: string,
+    name: string,
   }
 }
 

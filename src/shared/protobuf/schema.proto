@@ -53,6 +53,7 @@ message Snapshot {
 message Message {
     optional int32 id = 1;
     string content = 2;
+    optional string name = 3;
 }
 
 message Login {
