@@ -105,7 +105,7 @@ class Login extends phaser_1.Scene {
                 }
             });
             this.buttons["next"] = this.addButton(screenCenterX + 150, screenCenterY + 100, "next", () => {
-                if (sprite < 8) {
+                if (sprite < 32) {
                     sprite++;
                     displaySprite.setTexture(sprite.toString()).setFrame(1);
                 }

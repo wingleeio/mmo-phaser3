@@ -146,7 +146,7 @@ export class Login extends Scene {
       screenCenterY + 100,
       "next",
       () => {
-        if (sprite < 8) {
+        if (sprite < 32) {
           sprite++;
           displaySprite.setTexture(sprite.toString()).setFrame(1);
         }
