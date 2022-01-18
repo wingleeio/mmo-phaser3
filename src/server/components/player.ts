@@ -2,7 +2,7 @@ import { Schema } from "@shared/protobuf";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   instance: Schema.Player;
-
+  facing: number;
   constructor(config: {
     id: number;
     scene: Phaser.Scene;

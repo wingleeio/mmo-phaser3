@@ -108,6 +108,7 @@ class World extends Phaser.Scene {
             position.setY(player.y);
             position.setDirection(player.instance.getDirection());
             position.setSprite(player.instance.getSprite());
+            position.setFacing(player.facing);
             position.setMoving(player.instance.getMoving().getUp() ||
                 player.instance.getMoving().getDown() ||
                 player.instance.getMoving().getLeft() ||
@@ -122,6 +123,13 @@ class World extends Phaser.Scene {
             const packet = yield (0, serialization_1.decodeBinary)(e.data, protobuf_1.Schema.ClientPacket);
             const newPacket = new protobuf_1.Schema.ServerPacket();
             switch (packet.getType()) {
+                case protobuf_1.Schema.ClientPacketType.ATTACK_CLIENT:
+                    newPacket.setType(protobuf_1.Schema.ServerPacketType.ATTACK_SERVER);
+                    newPacket.setAttack(new protobuf_1.Schema.Attack());
+                    newPacket.getAttack().setId(id);
+                    newPacket.getAttack().setFacing(packet.getFacing());
+                    this.broadcast(newPacket.serializeBinary());
+                    break;
                 case protobuf_1.Schema.ClientPacketType.MOVEMENT_INPUT:
                     this.handleMovementInput(id, packet);
                     break;
@@ -249,6 +257,7 @@ class World extends Phaser.Scene {
         });
     }
     handleMovementInput(id, packet) {
+        players[id].facing = packet.getMovementinput().getFacing();
         switch (packet.getMovementinput().getDirection()) {
             case protobuf_1.Schema.Direction.UP:
                 players[id].instance.setDirection(schema_pb_1.Direction.UP);

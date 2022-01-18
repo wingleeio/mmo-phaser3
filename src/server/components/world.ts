@@ -143,6 +143,7 @@ export class World extends Phaser.Scene {
       position.setY(player.y);
       position.setDirection(player.instance.getDirection());
       position.setSprite(player.instance.getSprite());
+      position.setFacing(player.facing);
       position.setMoving(
         player.instance.getMoving().getUp() ||
           player.instance.getMoving().getDown() ||
@@ -164,6 +165,13 @@ export class World extends Phaser.Scene {
     const newPacket = new Schema.ServerPacket();
 
     switch (packet.getType()) {
+      case Schema.ClientPacketType.ATTACK_CLIENT:
+        newPacket.setType(Schema.ServerPacketType.ATTACK_SERVER);
+        newPacket.setAttack(new Schema.Attack());
+        newPacket.getAttack().setId(id);
+        newPacket.getAttack().setFacing(packet.getFacing());
+        this.broadcast(newPacket.serializeBinary());
+        break;
       case Schema.ClientPacketType.MOVEMENT_INPUT:
         this.handleMovementInput(id, packet);
         break;
@@ -305,6 +313,7 @@ export class World extends Phaser.Scene {
   }
 
   handleMovementInput(id: number, packet: Schema.ClientPacket) {
+    players[id].facing = packet.getMovementinput().getFacing();
     switch (packet.getMovementinput().getDirection()) {
       case Schema.Direction.UP:
         players[id].instance.setDirection(Direction.UP);

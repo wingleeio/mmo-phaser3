@@ -23,6 +23,7 @@ const config: Phaser.Types.Core.GameConfig = {
     default: "arcade",
     arcade: {
       fixedStep: false,
+      // debug: true,
     },
   },
   dom: {

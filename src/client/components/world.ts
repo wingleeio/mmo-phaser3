@@ -42,21 +42,39 @@ export class World extends Scene {
     this.load.image("terrain", "assets/tilesets/terrain.png");
     this.load.image("outside", "assets/tilesets/outside.png");
     this.load.image("water", "assets/tilesets/water.png");
+    this.load.spritesheet("slash", "assets/animations/slash.png", {
+      frameWidth: 64,
+      frameHeight: 64,
+    });
     this.load.tilemapTiledJSON("map", "assets/tilemaps/World.json");
   }
 
   create() {
     this.initMap();
     this.input.keyboard.addKeys("W,A,S,D");
+
     this.inputs = this.input.keyboard.addKeys({
       up: "W",
       left: "A",
       down: "S",
       right: "D",
     });
-    console.log(this.inputs);
+
     this.scene.launch("chat");
     this.sendingMessage = false;
+
+    this.input.on("pointermove", (pointer) => {
+      const player = players[this.me];
+      player.facing =
+        Phaser.Math.RAD_TO_DEG *
+        Phaser.Math.Angle.Between(
+          players[this.me].x,
+          players[this.me].y,
+          pointer.worldX,
+          pointer.worldY
+        );
+    });
+
     this.input.keyboard.on("keydown", (event: any) => {
       const chat: Chat = this.scene.get("chat") as any;
 
@@ -96,6 +114,18 @@ export class World extends Scene {
           );
         }
       }
+
+      if (
+        event.keyCode === Phaser.Input.Keyboard.KeyCodes.SPACE &&
+        !this.sendingMessage
+      ) {
+        players[this.me].attack(() => {
+          const packet = new Schema.ClientPacket();
+          packet.setType(Schema.ClientPacketType.ATTACK_CLIENT);
+          packet.setFacing(players[this.me].facing);
+          this.server.send(packet.serializeBinary());
+        });
+      }
     });
   }
 
@@ -107,12 +137,13 @@ export class World extends Scene {
     this.server.send(packet.serializeBinary());
   };
 
-  sendMovingPacket = (direction: any, isMoving: boolean) => {
+  sendMovingPacket = (direction: any, isMoving: boolean, facing: number) => {
     const packet = new Schema.ClientPacket();
     packet.setType(Schema.ClientPacketType.MOVEMENT_INPUT);
     packet.setMovementinput(new Schema.MovementInput());
     packet.getMovementinput().setIsmoving(isMoving);
     packet.getMovementinput().setDirection(direction);
+    packet.getMovementinput().setFacing(facing);
     this.server.send(packet.serializeBinary());
   };
 
@@ -123,37 +154,37 @@ export class World extends Scene {
       return;
     }
     if (this.inputs.up.isDown && !player.instance.getMoving().getUp()) {
-      this.sendMovingPacket(Schema.Direction.UP, true);
+      this.sendMovingPacket(Schema.Direction.UP, true, player.facing);
       players[this.me].instance.getMoving().setUp(true);
     } else if (this.inputs.up.isUp && player.instance.getMoving().getUp()) {
-      this.sendMovingPacket(Schema.Direction.UP, false);
+      this.sendMovingPacket(Schema.Direction.UP, false, player.facing);
       players[this.me].instance.getMoving().setUp(false);
     }
 
     if (this.inputs.down.isDown && !player.instance.getMoving().getDown()) {
-      this.sendMovingPacket(Schema.Direction.DOWN, true);
+      this.sendMovingPacket(Schema.Direction.DOWN, true, player.facing);
       players[this.me].instance.getMoving().setDown(true);
     } else if (this.inputs.down.isUp && player.instance.getMoving().getDown()) {
-      this.sendMovingPacket(Schema.Direction.DOWN, false);
+      this.sendMovingPacket(Schema.Direction.DOWN, false, player.facing);
       players[this.me].instance.getMoving().setDown(false);
     }
 
     if (this.inputs.left.isDown && !player.instance.getMoving().getLeft()) {
-      this.sendMovingPacket(Schema.Direction.LEFT, true);
+      this.sendMovingPacket(Schema.Direction.LEFT, true, player.facing);
       players[this.me].instance.getMoving().setLeft(true);
     } else if (this.inputs.left.isUp && player.instance.getMoving().getLeft()) {
-      this.sendMovingPacket(Schema.Direction.LEFT, false);
+      this.sendMovingPacket(Schema.Direction.LEFT, false, player.facing);
       players[this.me].instance.getMoving().setLeft(false);
     }
 
     if (this.inputs.right.isDown && !player.instance.getMoving().getRight()) {
-      this.sendMovingPacket(Schema.Direction.RIGHT, true);
+      this.sendMovingPacket(Schema.Direction.RIGHT, true, player.facing);
       players[this.me].instance.getMoving().setRight(true);
     } else if (
       this.inputs.right.isUp &&
       player.instance.getMoving().getRight()
     ) {
-      this.sendMovingPacket(Schema.Direction.RIGHT, false);
+      this.sendMovingPacket(Schema.Direction.RIGHT, false, player.facing);
       players[this.me].instance.getMoving().setRight(false);
     }
   };
@@ -170,7 +201,7 @@ export class World extends Scene {
     this.map.createLayer("ground_decor", tilesets).setScale(4, 4);
     this.map.createLayer("ground_decor_2", tilesets).setScale(4, 4);
     this.map.createLayer("objects", tilesets).setScale(4, 4);
-    this.map.createLayer("objects_upper", tilesets).setScale(4, 4).setDepth(1);
+    this.map.createLayer("objects_upper", tilesets).setScale(4, 4).setDepth(3);
     this.collisionLayer = this.map
       .createLayer("collision", tilesets)
       .setScale(4, 4)
@@ -229,6 +260,12 @@ export class World extends Scene {
         delete players[packet.getId()];
         disconnected[packet.getId()] = true;
         break;
+
+      case Schema.ServerPacketType.ATTACK_SERVER:
+        players[packet.getAttack().getId()].facing = packet
+          .getAttack()
+          .getFacing();
+        players[packet.getAttack().getId()].attack();
       default:
         break;
     }
@@ -277,7 +314,6 @@ export class World extends Scene {
       player.label.body.velocity.y = -speed;
       player.message.body.velocity.y = -speed;
       player.messageContent.body.velocity.y = -speed;
-      player.instance.setDirection(Schema.Direction.UP);
     }
 
     if (moving.down) {
@@ -285,7 +321,6 @@ export class World extends Scene {
       player.label.body.velocity.y = speed;
       player.message.body.velocity.y = speed;
       player.messageContent.body.velocity.y = speed;
-      player.instance.setDirection(Schema.Direction.DOWN);
     }
 
     if (moving.left) {
@@ -293,7 +328,6 @@ export class World extends Scene {
       player.label.body.velocity.x = -speed;
       player.message.body.velocity.x = -speed;
       player.messageContent.body.velocity.x = -speed;
-      player.instance.setDirection(Schema.Direction.LEFT);
     }
 
     if (moving.right) {
@@ -301,7 +335,6 @@ export class World extends Scene {
       player.label.body.velocity.x = speed;
       player.message.body.velocity.x = speed;
       player.messageContent.body.velocity.x = speed;
-      player.instance.setDirection(Schema.Direction.RIGHT);
     }
 
     if (!moving.up && !moving.down) {
@@ -316,6 +349,27 @@ export class World extends Scene {
       player.message.body.velocity.x = 0;
       player.messageContent.body.velocity.x = 0;
       player.label.body.velocity.x = 0;
+    }
+
+    if (moving.left || moving.right || moving.up || moving.down) {
+      if (player.facing >= -45 && player.facing <= 45) {
+        player.instance.setDirection(Schema.Direction.RIGHT);
+      }
+
+      if (player.facing <= -45 && player.facing >= -135) {
+        player.instance.setDirection(Schema.Direction.UP);
+      }
+
+      if (
+        (player.facing <= -135 && player.facing >= -180) ||
+        (player.facing >= 135 && player.facing <= 180)
+      ) {
+        player.instance.setDirection(Schema.Direction.LEFT);
+      }
+
+      if (player.facing <= 135 && player.facing >= 45) {
+        player.instance.setDirection(Schema.Direction.DOWN);
+      }
     }
 
     player.updateAnimations();
@@ -340,12 +394,11 @@ export class World extends Scene {
     if (snapshot) {
       const { state } = snapshot;
       state.forEach((s) => {
-        const { id, x, y, direction, moving, sprite, name } = s;
+        const { id, x, y, moving, sprite, name, facing } = s;
         if (players[Number(id)]) {
           if (this.me === Number(id)) return;
           players[Number(id)].x = Number(x);
           players[Number(id)].y = Number(y);
-          players[Number(id)].instance.setDirection(direction as any);
           players[Number(id)].instance.getMoving().setDown(Boolean(moving));
           players[Number(id)].label.setPosition(Number(x), Number(y) - 80);
           players[Number(id)].message.setPosition(Number(x), Number(y) - 160);
@@ -353,6 +406,28 @@ export class World extends Scene {
             Number(x),
             Number(y) - 163
           );
+          const player = players[Number(id)];
+          player.facing = facing as number;
+          if (moving) {
+            if (player.facing >= -45 && player.facing <= 45) {
+              player.instance.setDirection(Schema.Direction.RIGHT);
+            }
+
+            if (player.facing <= -45 && player.facing >= -135) {
+              player.instance.setDirection(Schema.Direction.UP);
+            }
+
+            if (
+              (player.facing <= -135 && player.facing >= -180) ||
+              (player.facing >= 135 && player.facing <= 180)
+            ) {
+              player.instance.setDirection(Schema.Direction.LEFT);
+            }
+
+            if (player.facing <= 135 && player.facing >= 45) {
+              player.instance.setDirection(Schema.Direction.DOWN);
+            }
+          }
           players[Number(id)].updateAnimations();
         } else {
           if (!disconnected[Number(id)]) {

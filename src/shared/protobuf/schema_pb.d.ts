@@ -42,6 +42,9 @@ export class MovementInput extends jspb.Message {
   getIsmoving(): boolean;
   setIsmoving(value: boolean): void;
 
+  getFacing(): number;
+  setFacing(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MovementInput.AsObject;
   static toObject(includeInstance: boolean, msg: MovementInput): MovementInput.AsObject;
@@ -56,6 +59,7 @@ export namespace MovementInput {
   export type AsObject = {
     direction: DirectionMap[keyof DirectionMap],
     ismoving: boolean,
+    facing: number,
   }
 }
 
@@ -150,6 +154,9 @@ export class Position extends jspb.Message {
   getName(): string;
   setName(value: string): void;
 
+  getFacing(): number;
+  setFacing(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Position.AsObject;
   static toObject(includeInstance: boolean, msg: Position): Position.AsObject;
@@ -169,6 +176,7 @@ export namespace Position {
     moving: boolean,
     sprite: number,
     name: string,
+    facing: number,
   }
 }
 
@@ -284,6 +292,30 @@ export namespace UpdateAccount {
   }
 }
 
+export class Attack extends jspb.Message {
+  getId(): number;
+  setId(value: number): void;
+
+  getFacing(): number;
+  setFacing(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Attack.AsObject;
+  static toObject(includeInstance: boolean, msg: Attack): Attack.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Attack, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Attack;
+  static deserializeBinaryFromReader(message: Attack, reader: jspb.BinaryReader): Attack;
+}
+
+export namespace Attack {
+  export type AsObject = {
+    id: number,
+    facing: number,
+  }
+}
+
 export class ClientPacket extends jspb.Message {
   getType(): ClientPacketTypeMap[keyof ClientPacketTypeMap];
   setType(value: ClientPacketTypeMap[keyof ClientPacketTypeMap]): void;
@@ -313,6 +345,11 @@ export class ClientPacket extends jspb.Message {
   getUpdate(): UpdateAccount | undefined;
   setUpdate(value?: UpdateAccount): void;
 
+  hasFacing(): boolean;
+  clearFacing(): void;
+  getFacing(): number;
+  setFacing(value: number): void;
+
   getDataCase(): ClientPacket.DataCase;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ClientPacket.AsObject;
@@ -332,6 +369,7 @@ export namespace ClientPacket {
     login?: Login.AsObject,
     address: string,
     update?: UpdateAccount.AsObject,
+    facing: number,
   }
 
   export enum DataCase {
@@ -341,6 +379,7 @@ export namespace ClientPacket {
     LOGIN = 5,
     ADDRESS = 6,
     UPDATE = 7,
+    FACING = 8,
   }
 }
 
@@ -373,6 +412,11 @@ export class ServerPacket extends jspb.Message {
   getNonce(): number;
   setNonce(value: number): void;
 
+  hasAttack(): boolean;
+  clearAttack(): void;
+  getAttack(): Attack | undefined;
+  setAttack(value?: Attack): void;
+
   getDataCase(): ServerPacket.DataCase;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ServerPacket.AsObject;
@@ -392,6 +436,7 @@ export namespace ServerPacket {
     snapshot?: Snapshot.AsObject,
     message?: Message.AsObject,
     nonce: number,
+    attack?: Attack.AsObject,
   }
 
   export enum DataCase {
@@ -401,6 +446,7 @@ export namespace ServerPacket {
     SNAPSHOT = 5,
     MESSAGE = 6,
     NONCE = 7,
+    ATTACK = 8,
   }
 }
 
@@ -419,6 +465,7 @@ export interface ClientPacketTypeMap {
   LOGIN: 2;
   NONCE: 3;
   UPDATE_ACCOUNT: 4;
+  ATTACK_CLIENT: 5;
 }
 
 export const ClientPacketType: ClientPacketTypeMap;
@@ -431,6 +478,7 @@ export interface ServerPacketTypeMap {
   SERVER_NONCE: 4;
   MISSING_DETAILS: 5;
   LOGIN_SUCCESS: 6;
+  ATTACK_SERVER: 7;
 }
 
 export const ServerPacketType: ServerPacketTypeMap;

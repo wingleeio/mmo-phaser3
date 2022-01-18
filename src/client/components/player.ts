@@ -1,5 +1,7 @@
 import { Schema } from "@shared/protobuf";
 import { NinePatch } from "phaser3-rex-plugins/templates/ui/ui-components.js";
+import { Slash } from "./attacks/slash";
+
 export class Player extends Phaser.Physics.Arcade.Sprite {
   instance: Schema.Player;
   label: Phaser.GameObjects.Text;
@@ -7,6 +9,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   message: NinePatch;
   messageContent: Phaser.GameObjects.Text;
   messageTimeout: NodeJS.Timeout;
+
+  attackCoolDown = 350;
+  canAttack = true;
+
+  facing: number;
+
   constructor(config: {
     id: number;
     scene: Phaser.Scene;
@@ -112,6 +120,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.messageContent.setAlpha(0);
       this.message.setAlpha(0);
     }, 6000);
+  };
+
+  attack = (callback?: any) => {
+    if (this.canAttack) {
+      callback && callback();
+      new Slash(this.scene, this.x, this.y, "slash", this.facing);
+
+      this.canAttack = false;
+
+      setTimeout(() => {
+        this.canAttack = true;
+      }, this.attackCoolDown);
+    }
   };
 
   updateAnimations: any = (): void => {

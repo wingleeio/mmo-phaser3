@@ -2,9 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
 const protobuf_1 = require("@shared/protobuf");
+const slash_1 = require("./attacks/slash");
 class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(config) {
         super(config.scene, config.x, config.y, "1");
+        this.attackCoolDown = 350;
+        this.canAttack = true;
         this.sentMessage = (message) => {
             clearTimeout(this.messageTimeout);
             this.messageContent.setText(message).setAlpha(0.8);
@@ -14,6 +17,16 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 this.messageContent.setAlpha(0);
                 this.message.setAlpha(0);
             }, 6000);
+        };
+        this.attack = (callback) => {
+            if (this.canAttack) {
+                callback && callback();
+                new slash_1.Slash(this.scene, this.x, this.y, "slash", this.facing);
+                this.canAttack = false;
+                setTimeout(() => {
+                    this.canAttack = true;
+                }, this.attackCoolDown);
+            }
         };
         this.updateAnimations = () => {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
