@@ -25,7 +25,7 @@ class Login extends phaser_1.Scene {
         super({ key: "Login" });
         this.buttons = {};
         this.preload = () => {
-            for (let i = 1; i <= 32; i++) {
+            for (let i = 1; i <= 56; i++) {
                 this.load.spritesheet(`${i}`, `assets/sprites/${i}.png`, {
                     frameWidth: 26,
                     frameHeight: 36,
@@ -105,7 +105,7 @@ class Login extends phaser_1.Scene {
                 }
             });
             this.buttons["next"] = this.addButton(screenCenterX + 150, screenCenterY + 100, "next", () => {
-                if (sprite < 32) {
+                if (sprite < 56) {
                     sprite++;
                     displaySprite.setTexture(sprite.toString()).setFrame(1);
                 }

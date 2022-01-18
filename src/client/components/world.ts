@@ -20,7 +20,7 @@ const clientVault = new Vault();
 export class World extends Scene {
   server: WebSocket;
   me: number;
-  inputs: Phaser.Types.Input.Keyboard.CursorKeys;
+  inputs: any;
 
   map: Phaser.Tilemaps.Tilemap;
   collisionLayer: Phaser.Tilemaps.TilemapLayer;
@@ -47,7 +47,14 @@ export class World extends Scene {
 
   create() {
     this.initMap();
-    this.inputs = this.input.keyboard.createCursorKeys();
+    this.input.keyboard.addKeys("W,A,S,D");
+    this.inputs = this.input.keyboard.addKeys({
+      up: "W",
+      left: "A",
+      down: "S",
+      right: "D",
+    });
+    console.log(this.inputs);
     this.scene.launch("chat");
     this.sendingMessage = false;
     this.input.keyboard.on("keydown", (event: any) => {

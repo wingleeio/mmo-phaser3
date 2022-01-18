@@ -281,7 +281,14 @@ class World extends phaser_1.Scene {
     }
     create() {
         this.initMap();
-        this.inputs = this.input.keyboard.createCursorKeys();
+        this.input.keyboard.addKeys("W,A,S,D");
+        this.inputs = this.input.keyboard.addKeys({
+            up: "W",
+            left: "A",
+            down: "S",
+            right: "D",
+        });
+        console.log(this.inputs);
         this.scene.launch("chat");
         this.sendingMessage = false;
         this.input.keyboard.on("keydown", (event) => {
