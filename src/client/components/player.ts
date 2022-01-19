@@ -1,5 +1,6 @@
 import { Schema } from "@shared/protobuf";
 import { NinePatch } from "phaser3-rex-plugins/templates/ui/ui-components.js";
+import { StyleConstants } from "../utls/constants";
 import { Slash } from "./attacks/slash";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
@@ -108,6 +109,43 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       yoyo: true,
       frames: this.anims.generateFrameNumbers(walk, { start: 10, end: 10 }),
     });
+
+    this.label = this.scene.add
+      .text(
+        this.x,
+        this.y - 80,
+        this.instance.getName(),
+        StyleConstants.USERNAME_TEXT_STYLE
+      )
+      .setOrigin(0.5, 0.5)
+      .setShadow(1, 1, "black")
+      .setAlpha(0.8)
+      .setDepth(3);
+
+    this.messageContent = this.scene.add
+      .text(this.x, this.y - 163, "", StyleConstants.TEXT_STYLE)
+      .setOrigin(0.5, 0.5)
+      .setAlpha(0)
+      .setColor("black")
+      .setDepth(4);
+
+    this.message = this.scene.add
+      .existing(
+        new NinePatch(
+          this.scene,
+          this.x,
+          this.y - 160,
+          this.messageContent.width + 100,
+          100,
+          "bubble",
+          [36, 36, 48, 36, 36],
+          [36, 36, 48, 36, 36]
+        )
+      )
+      .setDepth(3)
+      .setAlpha(0);
+
+    this.setSize(16, 16).setOffset(5, 20);
   }
 
   sentMessage = (message: string) => {

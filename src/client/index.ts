@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import { World } from "./components/world";
 import WebFont from "webfontloader";
 import { Login } from "./components/login";
+import RexUIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -14,6 +15,16 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   parent: "game",
   scene: [Login, World, Chat],
+  plugins: {
+    scene: [
+      {
+        key: "UI",
+        plugin: RexUIPlugin,
+        mapping: "UI",
+      },
+      // ...
+    ],
+  },
   render: {
     antialias: false,
     pixelArt: true,
@@ -39,7 +50,7 @@ export class Game extends Phaser.Game {
 
 WebFont.load({
   custom: {
-    families: ["Dogica"],
+    families: ["Dogica", "DogicaBold"],
   },
   active: () => {
     new Game(config);

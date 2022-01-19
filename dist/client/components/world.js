@@ -15,9 +15,8 @@ const player_1 = require("./player");
 const phaser_1 = require("phaser");
 const protobuf_1 = require("@shared/protobuf");
 const serialization_1 = require("@shared/utils/serialization");
-const constants_1 = require("../utls/constants");
-const ui_components_1 = require("phaser3-rex-plugins/templates/ui/ui-components");
 const server_1 = require("../utls/server");
+const schema_pb_1 = require("@shared/protobuf/schema_pb");
 const players = {};
 const disconnected = {};
 const SI = new snapshot_interpolation_1.SnapshotInterpolation(15);
@@ -25,6 +24,9 @@ const clientVault = new snapshot_interpolation_1.Vault();
 class World extends phaser_1.Scene {
     constructor() {
         super({ key: "World" });
+        this.preload = () => {
+            this.load.scenePlugin("AnimatedTiles", "assets/plugins/AnimatedTiles.js", "animatedTiles", "animatedTiles");
+        };
         this.init = ({ id }) => {
             this.me = id;
         };
@@ -151,36 +153,25 @@ class World extends phaser_1.Scene {
             const speed = player.instance.getSpeed();
             if (moving.up) {
                 player.setVelocityY(-speed);
+                player.instance.setDirection(schema_pb_1.Direction.UP);
             }
             if (moving.down) {
                 player.setVelocityY(speed);
+                player.instance.setDirection(schema_pb_1.Direction.DOWN);
             }
             if (moving.left) {
                 player.setVelocityX(-speed);
+                player.instance.setDirection(schema_pb_1.Direction.LEFT);
             }
             if (moving.right) {
                 player.setVelocityX(speed);
+                player.instance.setDirection(schema_pb_1.Direction.RIGHT);
             }
             if (!moving.up && !moving.down) {
                 player.setVelocityY(0);
             }
             if (!moving.left && !moving.right) {
                 player.setVelocityX(0);
-            }
-            if (moving.left || moving.right || moving.up || moving.down) {
-                if (player.facing >= -45 && player.facing <= 45) {
-                    player.instance.setDirection(protobuf_1.Schema.Direction.RIGHT);
-                }
-                if (player.facing <= -45 && player.facing >= -135) {
-                    player.instance.setDirection(protobuf_1.Schema.Direction.UP);
-                }
-                if ((player.facing <= -135 && player.facing >= -180) ||
-                    (player.facing >= 135 && player.facing <= 180)) {
-                    player.instance.setDirection(protobuf_1.Schema.Direction.LEFT);
-                }
-                if (player.facing <= 135 && player.facing >= 45) {
-                    player.instance.setDirection(protobuf_1.Schema.Direction.DOWN);
-                }
             }
             player.updateAnimations();
             clientVault.add(SI.snapshot.create([
@@ -194,38 +185,22 @@ class World extends phaser_1.Scene {
         this.update = (time, delta) => {
             this.handleCursors();
             this.clientPrediction();
-            // this.serverReconciliation();
+            this.serverReconciliation();
             const snapshot = SI.calcInterpolation("x y");
             if (snapshot) {
                 const { state } = snapshot;
                 state.forEach((s) => {
-                    const { id, x, y, moving, sprite, name, facing } = s;
+                    const { id, x, y, moving, sprite, name, direction } = s;
                     if (players[Number(id)]) {
                         if (this.me === Number(id))
                             return;
                         players[Number(id)].x = Number(x);
                         players[Number(id)].y = Number(y);
+                        players[Number(id)].instance.setDirection(direction);
                         players[Number(id)].instance.getMoving().setDown(Boolean(moving));
                         players[Number(id)].label.setPosition(Number(x), Number(y) - 80);
                         players[Number(id)].message.setPosition(Number(x), Number(y) - 160);
                         players[Number(id)].messageContent.setPosition(Number(x), Number(y) - 163);
-                        const player = players[Number(id)];
-                        player.facing = facing;
-                        if (moving) {
-                            if (player.facing >= -45 && player.facing <= 45) {
-                                player.instance.setDirection(protobuf_1.Schema.Direction.RIGHT);
-                            }
-                            if (player.facing <= -45 && player.facing >= -135) {
-                                player.instance.setDirection(protobuf_1.Schema.Direction.UP);
-                            }
-                            if ((player.facing <= -135 && player.facing >= -180) ||
-                                (player.facing >= 135 && player.facing <= 180)) {
-                                player.instance.setDirection(protobuf_1.Schema.Direction.LEFT);
-                            }
-                            if (player.facing <= 135 && player.facing >= 45) {
-                                player.instance.setDirection(protobuf_1.Schema.Direction.DOWN);
-                            }
-                        }
                         players[Number(id)].updateAnimations();
                     }
                     else {
@@ -238,27 +213,6 @@ class World extends phaser_1.Scene {
                                 sprite: Number(sprite),
                                 name: name,
                             });
-                            player.label = this.add
-                                .text(Number(x), Number(y) - 80, name, constants_1.StyleConstants.TEXT_STYLE)
-                                .setOrigin(0.5, 0.5)
-                                .setShadow(1, 1, "black")
-                                .setAlpha(0.8)
-                                .setDepth(3);
-                            player.messageContent = this.add
-                                .text(Number(x), Number(y) - 163, `Player ${id}`, constants_1.StyleConstants.TEXT_STYLE)
-                                .setOrigin(0.5, 0.5)
-                                .setDepth(4);
-                            player.message = this.add
-                                .existing(new ui_components_1.NinePatch(this, Number(x), Number(y) - 160, player.messageContent.width + 100, 100, "bubble", [36, 36, 48, 36, 36], [36, 36, 48, 36, 36]))
-                                .setDepth(3);
-                            player.message.setAlpha(0);
-                            player.messageContent.setAlpha(0).setColor("black");
-                            // this.physics.world.enable([
-                            //   player.label,
-                            //   player.message,
-                            //   player.messageContent,
-                            // ]);
-                            player.setSize(16, 16).setOffset(5, 20);
                             this.physics.add.collider(player, this.collisionLayer);
                             players[Number(id)] = player;
                             if (Number(id) === this.me) {
@@ -273,18 +227,6 @@ class World extends phaser_1.Scene {
         };
         this.server = server_1.server;
         this.initConnection();
-    }
-    preload() {
-        this.load.image("bubble", "assets/gui/bubble4x.png");
-        this.load.image("rules", "assets/tilesets/rules.png");
-        this.load.image("terrain", "assets/tilesets/terrain.png");
-        this.load.image("outside", "assets/tilesets/outside.png");
-        this.load.image("water", "assets/tilesets/water.png");
-        this.load.spritesheet("slash", "assets/animations/slash.png", {
-            frameWidth: 64,
-            frameHeight: 64,
-        });
-        this.load.tilemapTiledJSON("map", "assets/tilemaps/World.json");
     }
     create() {
         this.initMap();
@@ -372,6 +314,7 @@ class World extends phaser_1.Scene {
             .setAlpha(0)
             .setCollisionByExclusion([-1]);
         this.physics.add.existing(this.add.zone(0, 0, this.map.widthInPixels * 4, this.map.heightInPixels * 4));
+        this.animatedTiles.init(this.map);
     }
     initConnection() {
         this.server.addEventListener("message", this.handleMessage);

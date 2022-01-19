@@ -7,6 +7,11 @@ exports.StyleConstants = {
         fontSize: "12px",
         smoothed: false,
     },
+    USERNAME_TEXT_STYLE: {
+        fontFamily: "Dogica",
+        fontSize: "12px",
+        smoothed: false,
+    },
     LOGO_STYLE: {
         fontFamily: "Dogica",
         fontSize: "48px",

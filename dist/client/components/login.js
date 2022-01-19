@@ -25,6 +25,16 @@ class Login extends phaser_1.Scene {
         super({ key: "Login" });
         this.buttons = {};
         this.preload = () => {
+            this.load.image("bubble", "assets/gui/bubble4x.png");
+            this.load.image("rules", "assets/tilesets/rules.png");
+            this.load.image("terrain", "assets/tilesets/terrain.png");
+            this.load.image("outside", "assets/tilesets/outside.png");
+            this.load.image("water", "assets/tilesets/water.png");
+            this.load.spritesheet("slash", "assets/animations/slash.png", {
+                frameWidth: 64,
+                frameHeight: 64,
+            });
+            this.load.tilemapTiledJSON("map", "assets/tilemaps/World.json");
             for (let i = 1; i <= 56; i++) {
                 this.load.spritesheet(`${i}`, `assets/sprites/${i}.png`, {
                     frameWidth: 26,

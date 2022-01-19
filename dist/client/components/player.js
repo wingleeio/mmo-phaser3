@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Player = void 0;
 const protobuf_1 = require("@shared/protobuf");
+const ui_components_js_1 = require("phaser3-rex-plugins/templates/ui/ui-components.js");
+const constants_1 = require("../utls/constants");
 const slash_1 = require("./attacks/slash");
 class Player extends Phaser.Physics.Arcade.Sprite {
     constructor(config) {
@@ -159,6 +161,23 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             yoyo: true,
             frames: this.anims.generateFrameNumbers(walk, { start: 10, end: 10 }),
         });
+        this.label = this.scene.add
+            .text(this.x, this.y - 80, this.instance.getName(), constants_1.StyleConstants.USERNAME_TEXT_STYLE)
+            .setOrigin(0.5, 0.5)
+            .setShadow(1, 1, "black")
+            .setAlpha(0.8)
+            .setDepth(3);
+        this.messageContent = this.scene.add
+            .text(this.x, this.y - 163, "", constants_1.StyleConstants.TEXT_STYLE)
+            .setOrigin(0.5, 0.5)
+            .setAlpha(0)
+            .setColor("black")
+            .setDepth(4);
+        this.message = this.scene.add
+            .existing(new ui_components_js_1.NinePatch(this.scene, this.x, this.y - 160, this.messageContent.width + 100, 100, "bubble", [36, 36, 48, 36, 36], [36, 36, 48, 36, 36]))
+            .setDepth(3)
+            .setAlpha(0);
+        this.setSize(16, 16).setOffset(5, 20);
     }
 }
 exports.Player = Player;

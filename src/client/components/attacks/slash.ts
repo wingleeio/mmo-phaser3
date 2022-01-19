@@ -1,3 +1,5 @@
+import { Player } from "../player";
+
 export class Slash extends Phaser.Physics.Arcade.Sprite {
   constructor(
     scene: Phaser.Scene,
