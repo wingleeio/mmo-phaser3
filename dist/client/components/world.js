@@ -141,9 +141,6 @@ class World extends phaser_1.Scene {
                 const correction = isMoving ? 60 : 180;
                 player.x -= offsetX / correction;
                 player.y -= offsetY / correction;
-                player.label.setPosition(player.x, player.y - 80);
-                player.message.setPosition(player.x, player.y - 160);
-                player.messageContent.setPosition(player.x, player.y - 163);
             }
         };
         this.clientPrediction = () => {
@@ -154,39 +151,21 @@ class World extends phaser_1.Scene {
             const speed = player.instance.getSpeed();
             if (moving.up) {
                 player.setVelocityY(-speed);
-                player.label.body.velocity.y = -speed;
-                player.message.body.velocity.y = -speed;
-                player.messageContent.body.velocity.y = -speed;
             }
             if (moving.down) {
                 player.setVelocityY(speed);
-                player.label.body.velocity.y = speed;
-                player.message.body.velocity.y = speed;
-                player.messageContent.body.velocity.y = speed;
             }
             if (moving.left) {
                 player.setVelocityX(-speed);
-                player.label.body.velocity.x = -speed;
-                player.message.body.velocity.x = -speed;
-                player.messageContent.body.velocity.x = -speed;
             }
             if (moving.right) {
                 player.setVelocityX(speed);
-                player.label.body.velocity.x = speed;
-                player.message.body.velocity.x = speed;
-                player.messageContent.body.velocity.x = speed;
             }
             if (!moving.up && !moving.down) {
                 player.setVelocityY(0);
-                player.message.body.velocity.y = 0;
-                player.messageContent.body.velocity.y = 0;
-                player.label.body.velocity.y = 0;
             }
             if (!moving.left && !moving.right) {
                 player.setVelocityX(0);
-                player.message.body.velocity.x = 0;
-                player.messageContent.body.velocity.x = 0;
-                player.label.body.velocity.x = 0;
             }
             if (moving.left || moving.right || moving.up || moving.down) {
                 if (player.facing >= -45 && player.facing <= 45) {
@@ -215,7 +194,7 @@ class World extends phaser_1.Scene {
         this.update = (time, delta) => {
             this.handleCursors();
             this.clientPrediction();
-            this.serverReconciliation();
+            // this.serverReconciliation();
             const snapshot = SI.calcInterpolation("x y");
             if (snapshot) {
                 const { state } = snapshot;
@@ -274,22 +253,13 @@ class World extends phaser_1.Scene {
                                 .setDepth(3);
                             player.message.setAlpha(0);
                             player.messageContent.setAlpha(0).setColor("black");
-                            this.physics.world.enable([
-                                player.label,
-                                player.message,
-                                player.messageContent,
-                            ]);
+                            // this.physics.world.enable([
+                            //   player.label,
+                            //   player.message,
+                            //   player.messageContent,
+                            // ]);
                             player.setSize(16, 16).setOffset(5, 20);
-                            //@ts-ignore
-                            player.label.body.setSize(64, 64).setOffset(18, 94);
-                            //@ts-ignore
-                            player.message.body.setSize(64, 64).setOffset(55, 218);
-                            //@ts-ignore
-                            player.messageContent.body.setSize(64, 64).setOffset(5, 178);
                             this.physics.add.collider(player, this.collisionLayer);
-                            this.physics.add.collider(player.label, this.collisionLayer);
-                            this.physics.add.collider(player.message, this.collisionLayer);
-                            this.physics.add.collider(player.messageContent, this.collisionLayer);
                             players[Number(id)] = player;
                             if (Number(id) === this.me) {
                                 this.cameras.main.setRoundPixels(true);
@@ -374,6 +344,14 @@ class World extends phaser_1.Scene {
                     this.server.send(packet.serializeBinary());
                 });
             }
+            this.events.on("postupdate", () => {
+                const player = players[this.me];
+                if (!player)
+                    return;
+                player.label.setPosition(player.x, player.y - 80);
+                player.message.setPosition(player.x, player.y - 160);
+                player.messageContent.setPosition(player.x, player.y - 163);
+            });
         });
     }
     initMap() {
