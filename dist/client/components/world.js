@@ -25,6 +25,7 @@ class World extends phaser_1.Scene {
     constructor() {
         super({ key: "World" });
         this.preload = () => {
+            this.load.audio("bgMusic", "assets/music/Track_6.wav");
             this.load.scenePlugin("AnimatedTiles", "assets/plugins/AnimatedTiles.js", "animatedTiles", "animatedTiles");
         };
         this.init = ({ id }) => {
@@ -229,6 +230,7 @@ class World extends phaser_1.Scene {
         this.initConnection();
     }
     create() {
+        this.sound.play("bgMusic", { loop: true });
         this.initMap();
         this.input.keyboard.addKeys("W,A,S,D");
         this.inputs = this.input.keyboard.addKeys({

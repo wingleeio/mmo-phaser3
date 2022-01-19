@@ -35,6 +35,7 @@ export class World extends Scene {
   }
 
   preload = () => {
+    this.load.audio("bgMusic", "assets/music/Track_6.wav");
     this.load.scenePlugin(
       "AnimatedTiles",
       "assets/plugins/AnimatedTiles.js",
@@ -48,6 +49,7 @@ export class World extends Scene {
   };
 
   create() {
+    this.sound.play("bgMusic", { loop: true });
     this.initMap();
     this.input.keyboard.addKeys("W,A,S,D");
 
