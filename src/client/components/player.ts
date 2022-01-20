@@ -10,6 +10,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   message: NinePatch;
   messageContent: Phaser.GameObjects.Text;
   messageTimeout: NodeJS.Timeout;
+  test: Phaser.GameObjects.DOMElement;
 
   attackCoolDown = 350;
   canAttack = true;
@@ -146,6 +147,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       .setAlpha(0);
 
     this.setSize(16, 16).setOffset(5, 20);
+
+    const test = document.createElement("div");
+    test.innerText = "Angry Dude";
+    test.style.fontFamily = "Dogica";
+    test.style.fontSize = "12px";
+    test.style.color = "white";
+    test.style.textShadow = " 1px 1px #000000";
+    test.style.userSelect = "none";
+
+    this.test = this.scene.add.dom(this.x, this.y - 100, test).setAlpha(0.8);
   }
 
   sentMessage = (message: string) => {

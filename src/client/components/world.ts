@@ -133,6 +133,7 @@ export class World extends Scene {
         player.label.setPosition(player.x, player.y - 80);
         player.message.setPosition(player.x, player.y - 160);
         player.messageContent.setPosition(player.x, player.y - 163);
+        player.test.setPosition(player.x, player.y - 100);
       });
     });
   }
